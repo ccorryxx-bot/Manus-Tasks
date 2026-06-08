@@ -8,40 +8,43 @@ import {
   TouchableOpacity,
 } from "react-native";
 
+// e-trim removes white background from PNG images via ImageKit
+const TR = "?tr=w-88,h-88,f-webp,e-trim";
+
 const ITEMS = [
   {
     label: "ငွေထုတ်",
-    uri: "https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913025065.png?tr=w-88,h-88,f-webp",
+    uri: `https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913025065.png${TR}`,
     isRed: false,
   },
   {
     label: "ဆုလာဘ်",
-    uri: "https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/IMG_20260608_163859.png?tr=w-88,h-88,f-webp",
+    uri: `https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/IMG_20260608_163859.png${TR}`,
     isRed: false,
   },
   {
     label: "VIP",
-    uri: "https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913465345.png?tr=w-88,h-88,f-webp",
+    uri: `https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913465345.png${TR}`,
     isRed: false,
   },
   {
     label: "ကံကောင်းခြင်း",
-    uri: "https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913565941.png?tr=w-88,h-88,f-webp",
+    uri: `https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913565941.png${TR}`,
     isRed: false,
   },
   {
     label: "အသိပေးချက်",
-    uri: "https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913673707.png?tr=w-88,h-88,f-webp",
+    uri: `https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913673707.png${TR}`,
     isRed: false,
   },
   {
     label: "Lucky Wheel",
-    uri: "https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913783929.png?tr=w-88,h-88,f-webp",
+    uri: `https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913783929.png${TR}`,
     isRed: false,
   },
   {
     label: "ငွေသွင်း",
-    uri: "https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913143971.png?tr=w-88,h-88,f-webp",
+    uri: `https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913143971.png${TR}`,
     isRed: true,
   },
 ] as const;
@@ -101,7 +104,7 @@ export function LeftSidebar({ activeId, onSelect }: LeftSidebarProps) {
 const styles = StyleSheet.create({
   gradient: {
     width: 72,
-    height: "100%",
+    alignSelf: "stretch",   // ← fix: was height:"100%", now stretches in flex row
     paddingTop: 10,
     alignItems: "center",
   },
@@ -116,6 +119,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     backgroundColor: "transparent",
     borderRadius: 12,
+    borderWidth: 0,
   },
   itemActive: {
     backgroundColor: "rgba(110,30,190,0.5)",
@@ -129,13 +133,15 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   icon: {
-    width: 44,
-    height: 44,
+    width: 48,
+    height: 48,
+    backgroundColor: "transparent",  // ← explicit transparent bg on image
   },
   label: {
     color: "#fff",
     fontSize: 9,
     textAlign: "center",
     marginTop: 2,
+    fontWeight: "600",
   },
 });
