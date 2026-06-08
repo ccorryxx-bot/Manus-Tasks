@@ -1,4 +1,5 @@
-import React, { useState, useCallback } from "react";
+import { LinearGradient } from "expo-linear-gradient";
+import React, { useCallback, useRef, useState } from "react";
 import {
   FlatList,
   Platform,
@@ -10,19 +11,21 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import * as Haptics from "expo-haptics";
 
-import { CasinoHeader } from "@/components/CasinoHeader";
+import { FilterIconRow } from "@/components/FilterIconRow";
 import { GameCard } from "@/components/GameCard";
 import { LeftSidebar } from "@/components/LeftSidebar";
-import { RightFilter } from "@/components/RightFilter";
+import { RightSidebar } from "@/components/RightSidebar";
 import { useColors } from "@/hooks/useColors";
 
-const SIDEBAR_WIDTH = 62;
-const RIGHT_FILTER_WIDTH = 62;
-const CARD_GAP = 6;
+const SIDEBAR_LEFT = 70;
+const SIDEBAR_RIGHT = 40;
+const COL_GAP = 10;
+const ROW_GAP = 10;
+const H_PAD = 6;
 
-type BadgeType = "New" | "Hot" | null;
+type BadgeType = "New!" | "Hot!" | null;
+type FilterId = "heart" | "ticket" | "news" | "fire";
 
 const GAMES = [
   {
@@ -52,102 +55,93 @@ const GAMES = [
     name: "China Street",
     image: require("@/assets/images/game-china-street.png"),
     players: 460,
-    badge: "New" as BadgeType,
+    badge: "New!" as BadgeType,
   },
   {
     id: "5",
     name: "Fire Link",
     image: require("@/assets/images/game-fire-link.png"),
     players: 490,
-    badge: "Hot" as BadgeType,
+    badge: "New!" as BadgeType,
   },
   {
     id: "6",
     name: "Lucky KOI",
     image: require("@/assets/images/game-lucky-koi.png"),
     players: 380,
-    badge: "New" as BadgeType,
+    badge: "New!" as BadgeType,
   },
   {
     id: "7",
     name: "Prancing Pigs",
     image: require("@/assets/images/game-prancing-pigs.png"),
     players: 472,
-    badge: "New" as BadgeType,
+    badge: "New!" as BadgeType,
   },
   {
     id: "8",
     name: "Platinum Streak",
     image: require("@/assets/images/game-china-street.png"),
     players: 485,
-    badge: "New" as BadgeType,
+    badge: "New!" as BadgeType,
   },
   {
     id: "9",
     name: "Fire Link 2",
     image: require("@/assets/images/game-fire-link.png"),
     players: 312,
-    badge: "Hot" as BadgeType,
+    badge: "Hot!" as BadgeType,
   },
   {
     id: "10",
     name: "Lucky Pigs",
     image: require("@/assets/images/game-prancing-pigs.png"),
     players: 228,
-    badge: "New" as BadgeType,
+    badge: "New!" as BadgeType,
   },
 ];
 
-const CATEGORY_CHIPS = ["All", "Popular", "New", "Hot", "VIP"];
+function BokehLayer() {
+  return (
+    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+      <View style={[bokeh.circle, { top: "10%", left: "15%", width: 120, height: 120, backgroundColor: "rgba(120,40,220,0.28)" }]} />
+      <View style={[bokeh.circle, { top: "35%", right: "5%", width: 90, height: 90, backgroundColor: "rgba(40,80,200,0.22)" }]} />
+      <View style={[bokeh.circle, { top: "60%", left: "30%", width: 140, height: 140, backgroundColor: "rgba(90,20,180,0.2)" }]} />
+      <View style={[bokeh.circle, { bottom: "10%", right: "20%", width: 80, height: 80, backgroundColor: "rgba(50,100,220,0.25)" }]} />
+      <View style={[bokeh.circle, { top: "5%", right: "35%", width: 60, height: 60, backgroundColor: "rgba(160,60,255,0.18)" }]} />
+    </View>
+  );
+}
+
+const bokeh = StyleSheet.create({
+  circle: {
+    position: "absolute",
+    borderRadius: 999,
+  },
+});
 
 export default function LobbyScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const { width: screenWidth } = useWindowDimensions();
 
-  const isLandscape = screenWidth > screenHeight;
-  const MAIN_WIDTH = screenWidth - SIDEBAR_WIDTH - RIGHT_FILTER_WIDTH;
-  const COLUMNS = isLandscape ? 3 : 2;
-  const CARD_WIDTH = (MAIN_WIDTH - CARD_GAP * (COLUMNS + 1)) / COLUMNS;
-  const FEATURED_HEIGHT = isLandscape ? screenHeight * 0.52 : 180;
-  const CARD_HEIGHT = isLandscape ? screenHeight * 0.42 : 140;
+  const contentWidth = screenWidth - SIDEBAR_LEFT - SIDEBAR_RIGHT;
+  const cardWidth = (contentWidth - H_PAD * 2 - COL_GAP) / 2;
 
-  const [activeNav, setActiveNav] = useState("home");
-  const [activeFilter, setActiveFilter] = useState("slots");
-  const [activeChip, setActiveChip] = useState("All");
-  const [balance] = useState(10000);
+  const [activeNav, setActiveNav] = useState("treasure");
+  const [activeFilter, setActiveFilter] = useState<FilterId>("fire");
 
-  const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
-  const featuredGame = GAMES.find((g) => g.featured);
+  const featuredGame = GAMES.find((g) => g.featured)!;
   const gridGames = GAMES.filter((g) => !g.featured);
 
-  const handleNavSelect = useCallback((id: string) => {
-    Haptics.selectionAsync();
-    setActiveNav(id);
-  }, []);
-
-  const handleFilterSelect = useCallback((id: string) => {
-    Haptics.selectionAsync();
-    setActiveFilter(id);
-  }, []);
-
-  const handleChipSelect = useCallback((chip: string) => {
-    Haptics.selectionAsync();
-    setActiveChip(chip);
-  }, []);
-
-  const handleGamePress = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  }, []);
-
-  const pairedGames: (typeof gridGames)[number][][] = [];
-  for (let i = 0; i < gridGames.length; i += COLUMNS) {
-    pairedGames.push(gridGames.slice(i, i + COLUMNS));
+  const pairs: (typeof gridGames)[] = [];
+  for (let i = 0; i < gridGames.length; i += 2) {
+    pairs.push(gridGames.slice(i, i + 2));
   }
 
-  const renderGameRow = useCallback(
-    ({ item }: { item: (typeof gridGames)[number][] }) => (
-      <View style={styles.gameRow}>
+  const renderPair = useCallback(
+    ({ item }: { item: typeof gridGames }) => (
+      <View style={[styles.pair, { gap: COL_GAP }]}>
         {item.map((game) => (
           <GameCard
             key={game.id}
@@ -155,157 +149,118 @@ export default function LobbyScreen() {
             image={game.image}
             players={game.players}
             badge={game.badge}
-            cardWidth={CARD_WIDTH}
-            cardHeight={CARD_HEIGHT}
-            onPress={handleGamePress}
+            cardWidth={cardWidth}
+            cardHeight={160}
           />
         ))}
-        {item.length < COLUMNS &&
-          Array.from({ length: COLUMNS - item.length }).map((_, i) => (
-            <View key={`empty-${i}`} style={{ width: CARD_WIDTH }} />
-          ))}
+        {item.length < 2 && <View style={{ width: cardWidth }} />}
       </View>
     ),
-    [CARD_WIDTH, CARD_HEIGHT, COLUMNS, handleGamePress],
+    [cardWidth],
   );
 
+  const topPad = Platform.OS === "web" ? 0 : insets.top;
+  const bottomPad = Platform.OS === "web" ? 0 : insets.bottom;
+
   return (
-    <View style={[styles.screen, { backgroundColor: colors.background }]}>
-      <CasinoHeader
-        balance={balance}
-        onNotificationPress={() => {}}
-        onProfilePress={() => {}}
+    <View style={styles.root}>
+      <LinearGradient
+        colors={["#1a0a3d", "#0d1b4b"]}
+        start={{ x: 0.3, y: 0 }}
+        end={{ x: 0.7, y: 1 }}
+        style={StyleSheet.absoluteFill}
       />
+      <BokehLayer />
 
-      <View style={styles.body}>
-        <LeftSidebar activeId={activeNav} onSelect={handleNavSelect} />
+      <View style={[styles.frame, { paddingTop: topPad, paddingBottom: bottomPad }]}>
+        <LeftSidebar activeId={activeNav} onSelect={setActiveNav} />
 
-        <View style={styles.mainContent}>
+        <View style={styles.main}>
+          <View style={styles.stickyTop}>
+            <FilterIconRow
+              activeFilter={activeFilter}
+              onFilterChange={setActiveFilter}
+            />
+            <TouchableOpacity style={styles.categoryPill} activeOpacity={0.8}>
+              <Text style={[styles.categoryText, { color: colors.pillBorder }]}>
+                သင်အတွက်
+              </Text>
+            </TouchableOpacity>
+          </View>
+
           <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={[
               styles.scrollContent,
-              { paddingBottom: bottomPad + 8 },
+              { paddingBottom: 12 },
             ]}
           >
-            {featuredGame && (
-              <View style={[styles.featuredWrapper, { paddingHorizontal: CARD_GAP }]}>
-                <GameCard
-                  name={featuredGame.name}
-                  image={featuredGame.image}
-                  players={featuredGame.players}
-                  badge={featuredGame.badge}
-                  featured
-                  cardWidth={MAIN_WIDTH - CARD_GAP * 2}
-                  cardHeight={FEATURED_HEIGHT}
-                  onPress={handleGamePress}
-                />
-              </View>
-            )}
-
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.chipsRow}
-              contentContainerStyle={[
-                styles.chipsContent,
-                { paddingHorizontal: CARD_GAP },
-              ]}
-            >
-              {CATEGORY_CHIPS.map((chip) => {
-                const isActive = activeChip === chip;
-                return (
-                  <TouchableOpacity
-                    key={chip}
-                    style={[
-                      styles.chip,
-                      {
-                        backgroundColor: isActive
-                          ? colors.accent
-                          : colors.surface,
-                        borderColor: isActive ? colors.accent : colors.border,
-                      },
-                    ]}
-                    onPress={() => handleChipSelect(chip)}
-                    activeOpacity={0.75}
-                  >
-                    <Text
-                      style={[
-                        styles.chipText,
-                        {
-                          color: isActive ? "#fff" : colors.mutedForeground,
-                          fontFamily: isActive
-                            ? "Inter_600SemiBold"
-                            : "Inter_400Regular",
-                        },
-                      ]}
-                    >
-                      {chip}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
+            <View style={[styles.heroWrap, { paddingHorizontal: H_PAD, marginBottom: ROW_GAP }]}>
+              <GameCard
+                name={featuredGame.name}
+                image={featuredGame.image}
+                players={featuredGame.players}
+                badge={featuredGame.badge}
+                featured
+                cardWidth={contentWidth - H_PAD * 2}
+                cardHeight={200}
+              />
+            </View>
 
             <FlatList
-              data={pairedGames}
-              renderItem={renderGameRow}
+              data={pairs}
+              renderItem={renderPair}
               keyExtractor={(_, i) => String(i)}
               scrollEnabled={false}
               contentContainerStyle={[
                 styles.gridContent,
-                { paddingHorizontal: CARD_GAP },
+                { paddingHorizontal: H_PAD, gap: ROW_GAP },
               ]}
             />
           </ScrollView>
         </View>
 
-        <RightFilter
-          activeFilter={activeFilter}
-          onFilterSelect={handleFilterSelect}
-        />
+        <RightSidebar onRefresh={() => {}} />
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
+  root: {
     flex: 1,
+    backgroundColor: "#1a0a3d",
   },
-  body: {
+  frame: {
     flex: 1,
     flexDirection: "row",
   },
-  mainContent: {
+  main: {
     flex: 1,
+  },
+  stickyTop: {
+    zIndex: 20,
   },
   scrollContent: {
-    paddingTop: 6,
+    paddingTop: 4,
   },
-  featuredWrapper: {
-    marginBottom: 8,
-  },
-  chipsRow: {
-    marginBottom: 8,
-  },
-  chipsContent: {
-    gap: 6,
-  },
-  chip: {
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 16,
-    borderWidth: 1,
-  },
-  chipText: {
-    fontSize: 12,
-  },
-  gridContent: {
-    gap: CARD_GAP,
-  },
-  gameRow: {
+  heroWrap: {},
+  gridContent: {},
+  pair: {
     flexDirection: "row",
-    gap: CARD_GAP,
+  },
+  categoryPill: {
+    alignSelf: "center",
+    borderWidth: 1.5,
+    borderColor: "#4499ff",
+    borderRadius: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 6,
+    marginBottom: 8,
+  },
+  categoryText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#4499ff",
   },
 });

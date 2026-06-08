@@ -3,7 +3,7 @@
     "name": "Manus Tasks Casino App",
     "slug": "casino-app",
     "version": "1.0.0",
-    "orientation": "landscape",
+    "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "casino-app",
     "userInterfaceStyle": "dark",
@@ -11,7 +11,7 @@
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "cover",
-      "backgroundColor": "#0E1535"
+      "backgroundColor": "#1a0a3d"
     },
     "ios": {
       "supportsTablet": false
