@@ -6,8 +6,6 @@ import {
   View,
 } from "react-native";
 
-import { useColors } from "@/hooks/useColors";
-
 type FilterId = "heart" | "ticket" | "news" | "fire";
 
 const FILTERS: {
@@ -15,11 +13,36 @@ const FILTERS: {
   type: "ionicons" | "mci";
   name: string;
   activeColor: string;
+  inactiveBg: string;
 }[] = [
-  { id: "heart", type: "ionicons", name: "heart-outline", activeColor: "#ff4488" },
-  { id: "ticket", type: "mci", name: "ticket-outline", activeColor: "#88aaff" },
-  { id: "news", type: "ionicons", name: "newspaper-outline", activeColor: "#88ddff" },
-  { id: "fire", type: "ionicons", name: "flame", activeColor: "#ff6600" },
+  {
+    id: "heart",
+    type: "ionicons",
+    name: "heart-outline",
+    activeColor: "#ff4488",
+    inactiveBg: "rgba(20,10,60,0.75)",
+  },
+  {
+    id: "ticket",
+    type: "mci",
+    name: "ticket-outline",
+    activeColor: "#88aaff",
+    inactiveBg: "rgba(20,10,60,0.75)",
+  },
+  {
+    id: "news",
+    type: "ionicons",
+    name: "newspaper-outline",
+    activeColor: "#88ddff",
+    inactiveBg: "rgba(20,10,60,0.75)",
+  },
+  {
+    id: "fire",
+    type: "ionicons",
+    name: "flame",
+    activeColor: "#ff6600",
+    inactiveBg: "rgba(20,10,60,0.75)",
+  },
 ];
 
 interface FilterIconRowProps {
@@ -31,11 +54,9 @@ export function FilterIconRow({
   activeFilter = "fire",
   onFilterChange,
 }: FilterIconRowProps) {
-  const colors = useColors();
-
   return (
     <View style={styles.container}>
-      <View style={styles.row}>
+      <View style={styles.pill}>
         {FILTERS.map((filter) => {
           const isActive = activeFilter === filter.id;
           return (
@@ -43,9 +64,7 @@ export function FilterIconRow({
               key={filter.id}
               style={[
                 styles.iconBtn,
-                isActive
-                  ? { backgroundColor: filter.activeColor }
-                  : { backgroundColor: "rgba(0,0,0,0.45)" },
+                { backgroundColor: isActive ? filter.activeColor : filter.inactiveBg },
               ]}
               onPress={() => onFilterChange?.(filter.id)}
               activeOpacity={0.75}
@@ -53,14 +72,14 @@ export function FilterIconRow({
               {filter.type === "ionicons" ? (
                 <Ionicons
                   name={filter.name as any}
-                  size={22}
-                  color={isActive ? "#ffffff" : "rgba(255,255,255,0.8)"}
+                  size={20}
+                  color="#ffffff"
                 />
               ) : (
                 <MaterialCommunityIcons
                   name={filter.name as any}
-                  size={22}
-                  color={isActive ? "#ffffff" : "rgba(255,255,255,0.8)"}
+                  size={20}
+                  color="#ffffff"
                 />
               )}
             </TouchableOpacity>
@@ -73,17 +92,17 @@ export function FilterIconRow({
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 8,
-    paddingVertical: 8,
-    backgroundColor: "rgba(0,0,0,0.25)",
-    borderRadius: 12,
-    marginHorizontal: 6,
-    marginBottom: 8,
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-evenly",
     alignItems: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+  },
+  pill: {
+    flexDirection: "row",
+    gap: 10,
+    backgroundColor: "rgba(10,5,40,0.6)",
+    borderRadius: 28,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
   iconBtn: {
     width: 44,
