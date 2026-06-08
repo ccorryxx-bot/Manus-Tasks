@@ -1,5 +1,6 @@
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useCallback, useRef, useState } from "react";
+import { StatusBar } from "expo-status-bar";
+import React, { useCallback, useState } from "react";
 import {
   FlatList,
   Platform,
@@ -18,11 +19,9 @@ import { LeftSidebar } from "@/components/LeftSidebar";
 import { RightSidebar } from "@/components/RightSidebar";
 import { useColors } from "@/hooks/useColors";
 
-const SIDEBAR_LEFT = 70;
-const SIDEBAR_RIGHT = 40;
+const H_PAD = 6;
 const COL_GAP = 10;
 const ROW_GAP = 10;
-const H_PAD = 6;
 
 type BadgeType = "New!" | "Hot!" | null;
 type FilterId = "heart" | "ticket" | "news" | "fire";
@@ -123,20 +122,30 @@ const bokeh = StyleSheet.create({
 export default function LobbyScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { width: screenWidth } = useWindowDimensions();
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
-  const contentWidth = screenWidth - SIDEBAR_LEFT - SIDEBAR_RIGHT;
-  const cardWidth = (contentWidth - H_PAD * 2 - COL_GAP) / 2;
+  const isLandscape = screenWidth > screenHeight;
 
-  const [activeNav, setActiveNav] = useState("treasure");
+  const SIDEBAR_LEFT = 70;
+  const SIDEBAR_RIGHT = 40;
+
+  const contentWidth = isLandscape
+    ? screenWidth
+    : screenWidth - SIDEBAR_LEFT - SIDEBAR_RIGHT;
+
+  const COLUMNS = isLandscape ? 3 : 2;
+  const cardWidth = (contentWidth - H_PAD * 2 - COL_GAP * (COLUMNS - 1)) / COLUMNS;
+  const heroHeight = isLandscape ? 160 : 200;
+
+  const [activeNav, setActiveNav] = useState("withdraw");
   const [activeFilter, setActiveFilter] = useState<FilterId>("fire");
 
   const featuredGame = GAMES.find((g) => g.featured)!;
   const gridGames = GAMES.filter((g) => !g.featured);
 
   const pairs: (typeof gridGames)[] = [];
-  for (let i = 0; i < gridGames.length; i += 2) {
-    pairs.push(gridGames.slice(i, i + 2));
+  for (let i = 0; i < gridGames.length; i += COLUMNS) {
+    pairs.push(gridGames.slice(i, i + COLUMNS));
   }
 
   const renderPair = useCallback(
@@ -150,13 +159,16 @@ export default function LobbyScreen() {
             players={game.players}
             badge={game.badge}
             cardWidth={cardWidth}
-            cardHeight={160}
+            cardHeight={isLandscape ? 130 : 160}
           />
         ))}
-        {item.length < 2 && <View style={{ width: cardWidth }} />}
+        {item.length < COLUMNS &&
+          Array.from({ length: COLUMNS - item.length }).map((_, i) => (
+            <View key={`empty-${i}`} style={{ width: cardWidth }} />
+          ))}
       </View>
     ),
-    [cardWidth],
+    [cardWidth, isLandscape, COLUMNS],
   );
 
   const topPad = Platform.OS === "web" ? 0 : insets.top;
@@ -164,6 +176,13 @@ export default function LobbyScreen() {
 
   return (
     <View style={styles.root}>
+      <StatusBar
+        hidden={isLandscape}
+        style="light"
+        translucent={!isLandscape}
+        backgroundColor="transparent"
+      />
+
       <LinearGradient
         colors={["#1a0a3d", "#0d1b4b"]}
         start={{ x: 0.3, y: 0 }}
@@ -172,30 +191,47 @@ export default function LobbyScreen() {
       />
       <BokehLayer />
 
-      <View style={[styles.frame, { paddingTop: topPad, paddingBottom: bottomPad }]}>
-        <LeftSidebar activeId={activeNav} onSelect={setActiveNav} />
+      <View
+        style={[
+          styles.frame,
+          {
+            paddingTop: isLandscape ? 0 : topPad,
+            paddingBottom: isLandscape ? 0 : bottomPad,
+          },
+        ]}
+      >
+        {!isLandscape && (
+          <LeftSidebar activeId={activeNav} onSelect={setActiveNav} />
+        )}
 
         <View style={styles.main}>
-          <View style={styles.stickyTop}>
+          <View style={[styles.stickyTop, isLandscape && styles.filterLandscape]}>
             <FilterIconRow
               activeFilter={activeFilter}
               onFilterChange={setActiveFilter}
             />
-            <TouchableOpacity style={styles.categoryPill} activeOpacity={0.8}>
-              <Text style={[styles.categoryText, { color: colors.pillBorder }]}>
-                သင်အတွက်
-              </Text>
-            </TouchableOpacity>
+            {!isLandscape && (
+              <TouchableOpacity style={styles.categoryPill} activeOpacity={0.8}>
+                <Text style={[styles.categoryText, { color: colors.pillBorder }]}>
+                  သင်အတွက်
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={[
               styles.scrollContent,
-              { paddingBottom: 12 },
+              { paddingBottom: isLandscape ? 8 : 12 },
             ]}
           >
-            <View style={[styles.heroWrap, { paddingHorizontal: H_PAD, marginBottom: ROW_GAP }]}>
+            <View
+              style={[
+                styles.heroWrap,
+                { paddingHorizontal: H_PAD, marginBottom: ROW_GAP },
+              ]}
+            >
               <GameCard
                 name={featuredGame.name}
                 image={featuredGame.image}
@@ -203,7 +239,7 @@ export default function LobbyScreen() {
                 badge={featuredGame.badge}
                 featured
                 cardWidth={contentWidth - H_PAD * 2}
-                cardHeight={200}
+                cardHeight={heroHeight}
               />
             </View>
 
@@ -220,7 +256,7 @@ export default function LobbyScreen() {
           </ScrollView>
         </View>
 
-        <RightSidebar onRefresh={() => {}} />
+        {!isLandscape && <RightSidebar onRefresh={() => {}} />}
       </View>
     </View>
   );
@@ -240,6 +276,11 @@ const styles = StyleSheet.create({
   },
   stickyTop: {
     zIndex: 20,
+  },
+  filterLandscape: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingRight: 8,
   },
   scrollContent: {
     paddingTop: 4,
