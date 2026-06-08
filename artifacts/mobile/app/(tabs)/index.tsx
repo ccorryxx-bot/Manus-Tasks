@@ -1,26 +1,30 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import React, { useEffect, useState } from "react";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Animated,
   FlatList,
   Platform,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from "react-native";
-import { CasinoHeader } from "@/components/CasinoHeader";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GameCard } from "@/components/GameCard";
+import { useApp } from "@/context/AppContext";
 import { useColors } from "@/hooks/useColors";
 import { supabase, type Game } from "@/lib/supabase";
 
 const CATEGORIES = [
-  { id: "all",      icon: "cards-playing",   label: "ကစားပွဲ" },
-  { id: "slots",    icon: "slot-machine",     label: "Slots"   },
-  { id: "live",     icon: "video",            label: "Live"    },
-  { id: "jackpot",  icon: "treasure-chest",   label: "Jackpot" },
-  { id: "new",      icon: "star-shooting",    label: "New"     },
+  { id: "all",     icon: "cards-playing",  label: "ကစားပွဲ" },
+  { id: "slots",   icon: "slot-machine",   label: "Slots"   },
+  { id: "live",    icon: "video",          label: "Live"    },
+  { id: "jackpot", icon: "treasure-chest", label: "Jackpot" },
+  { id: "new",     icon: "star-shooting",  label: "New"     },
 ];
 
 const STATIC_GAMES: Game[] = [
@@ -38,194 +42,237 @@ const STATIC_GAMES: Game[] = [
   { id: "12", name: "Gold Rush",        provider: "Aristocrat", category: "jackpot", thumbnail_url: null, player_count: 167,  is_new: true,  is_hot: false, sort_order: 12, created_at: "" },
 ];
 
-function GameRow({ title, games, showFeatured }: { title: string; games: Game[]; showFeatured?: boolean }) {
-  const colors = useColors();
-  if (games.length === 0) return null;
-  return (
-    <View style={styles.rowSection}>
-      <Text style={[styles.rowTitle, { color: colors.gold }]}>{title}</Text>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.rowScroll}
-      >
-        {games.map((g, idx) => (
-          <View key={g.id} style={{ marginRight: 10 }}>
-            <GameCard game={g} featured={showFeatured && idx === 0} />
-          </View>
-        ))}
-      </ScrollView>
-    </View>
-  );
-}
-
 export default function HomeScreen() {
   const colors = useColors();
-  const [games, setGames] = useState<Game[]>(STATIC_GAMES);
-  const [loading, setLoading] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  const insets = useSafeAreaInsets();
+  const { width, height } = useWindowDimensions();
+  const { profile, balance, refreshBalance } = useApp();
+  const [games, setGames]           = useState<Game[]>(STATIC_GAMES);
+  const [loading, setLoading]       = useState(false);
+  const [category, setCategory]     = useState("all");
+  const [refreshing, setRefreshing] = useState(false);
+  const spinAnim = useRef(new Animated.Value(0)).current;
+
+  // Layout constants for landscape
+  const SIDEBAR    = 68;
+  const COLS       = 2;
+  const H_PAD      = 10;
+  const GAP        = 8;
+  const TOP_BAR_H  = 46 + 30;   // topBar + userStrip
+  const BOT_BAR_H  = 50;
+  const available  = width - SIDEBAR - H_PAD * 2 - GAP * (COLS - 1);
+  const gridH      = height - TOP_BAR_H - BOT_BAR_H;
+  // Show ~2.2 rows at once so user sees there's more below
+  const CARD_H     = Math.max(90, Math.floor((gridH - GAP) / 2.2));
+  const CARD_W     = Math.floor(available / COLS);
 
   useEffect(() => { fetchGames(); }, []);
 
   async function fetchGames() {
-    setLoading(true);
     try {
       const { data } = await supabase.from("games").select("*").order("sort_order");
       if (data && data.length > 0) setGames(data as Game[]);
     } catch { }
-    finally { setLoading(false); }
   }
 
-  const filtered = selectedCategory === "all"
-    ? games
-    : selectedCategory === "new"
-      ? games.filter((g) => g.is_new)
-      : games.filter((g) => g.category === selectedCategory);
+  async function handleRefresh() {
+    if (refreshing) return;
+    setRefreshing(true);
+    Animated.timing(spinAnim, { toValue: 1, duration: 700, useNativeDriver: true })
+      .start(() => spinAnim.setValue(0));
+    await refreshBalance();
+    setRefreshing(false);
+  }
 
-  const hotGames  = filtered.filter((g) => g.is_hot);
-  const newGames  = filtered.filter((g) => g.is_new);
-  const liveGames = filtered.filter((g) => g.category === "live");
-  const otherGames = filtered.filter((g) => !g.is_hot && !g.is_new);
+  const spin = spinAnim.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "360deg"] });
+
+  const filtered = category === "all"   ? games
+    : category === "new"                ? games.filter(g => g.is_new)
+    : games.filter(g => g.category === category);
+
+  const topPad = Platform.OS === "web" ? 0 : insets.top;
+
+  const formatBal = (n: number) =>
+    n >= 1_000_000 ? (n / 1_000_000).toFixed(1) + "M" : n.toLocaleString();
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
-      <CasinoHeader />
 
-      {/* Body: left sidebar + main scroll */}
-      <View style={styles.body}>
+      {/* ── Top compact bar ── */}
+      <View style={[styles.topBar, { backgroundColor: colors.headerBg, paddingTop: topPad, borderBottomColor: colors.border }]}>
 
-        {/* Left category sidebar */}
-        <View style={[styles.sidebar, { backgroundColor: colors.headerBg, borderRightColor: colors.border }]}>
-          {CATEGORIES.map((cat) => {
-            const active = selectedCategory === cat.id;
+        {/* Left: category pills */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.catScroll}>
+          {CATEGORIES.map(cat => {
+            const active = category === cat.id;
             return (
               <TouchableOpacity
                 key={cat.id}
-                onPress={() => setSelectedCategory(cat.id)}
+                onPress={() => setCategory(cat.id)}
                 style={[
-                  styles.sidebarBtn,
-                  active && { backgroundColor: colors.purple + "33" },
+                  styles.catPill,
+                  active
+                    ? { backgroundColor: colors.purple }
+                    : { backgroundColor: colors.card, borderColor: colors.border },
                 ]}
               >
-                <View style={[styles.sidebarIconWrap, active && { backgroundColor: colors.purple }]}>
-                  <MaterialCommunityIcons
-                    name={cat.icon as any}
-                    size={20}
-                    color={active ? "#FFF" : colors.mutedForeground}
-                  />
-                </View>
-                <Text
-                  style={[
-                    styles.sidebarLabel,
-                    { color: active ? colors.gold : colors.mutedForeground },
-                  ]}
-                  numberOfLines={1}
-                >
+                <MaterialCommunityIcons
+                  name={cat.icon as any}
+                  size={13}
+                  color={active ? "#FFF" : colors.mutedForeground}
+                />
+                <Text style={[styles.catLabel, { color: active ? "#FFF" : colors.mutedForeground }]}>
                   {cat.label}
                 </Text>
               </TouchableOpacity>
             );
           })}
-        </View>
+        </ScrollView>
 
-        {/* Main game rows */}
-        {loading ? (
-          <View style={styles.loadingWrap}>
-            <ActivityIndicator size="large" color={colors.gold} />
-          </View>
-        ) : (
-          <ScrollView
-            style={styles.mainScroll}
-            contentContainerStyle={{
-              paddingTop: 12,
-              paddingBottom: Platform.OS === "web" ? 100 : 90,
-            }}
-            showsVerticalScrollIndicator={false}
+        {/* Right: balance + avatar */}
+        <View style={styles.rightBar}>
+          <TouchableOpacity
+            onPress={handleRefresh}
+            style={[styles.balancePill, { backgroundColor: "rgba(255,215,0,0.12)", borderColor: "rgba(255,215,0,0.3)" }]}
           >
-            {hotGames.length > 0 && (
-              <GameRow title="🔥 Hot Games" games={hotGames} showFeatured />
-            )}
-            {newGames.length > 0 && (
-              <GameRow title="✨ New Games" games={newGames} />
-            )}
-            {liveGames.length > 0 && (
-              <GameRow title="🎥 Live Casino" games={liveGames} />
-            )}
-            {otherGames.length > 0 && (
-              <GameRow title="🎮 All Games" games={otherGames} />
-            )}
-            {filtered.length === 0 && (
-              <View style={styles.empty}>
-                <MaterialCommunityIcons name="cards-playing-outline" size={48} color={colors.mutedForeground} />
-                <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
-                  ဂိမ်းများ မတွေ့ပါ
-                </Text>
-              </View>
-            )}
-          </ScrollView>
-        )}
+            <MaterialCommunityIcons name="gold" size={14} color={colors.gold} />
+            <Text style={[styles.balText, { color: colors.gold }]}>{formatBal(balance)}</Text>
+            {refreshing
+              ? <ActivityIndicator size="small" color={colors.gold} style={{ marginLeft: 2 }} />
+              : (
+                <Animated.View style={{ transform: [{ rotate: spin }], marginLeft: 2 }}>
+                  <Feather name="refresh-cw" size={11} color={colors.gold + "aa"} />
+                </Animated.View>
+              )
+            }
+          </TouchableOpacity>
+
+          <TouchableOpacity style={[styles.avatar, { backgroundColor: colors.purple, borderColor: colors.gold + "55" }]}>
+            <Feather name="user" size={16} color={colors.gold} />
+          </TouchableOpacity>
+        </View>
       </View>
+
+      {/* ── Username + VIP strip ── */}
+      <View style={[styles.userStrip, { backgroundColor: colors.headerBg, borderBottomColor: colors.border }]}>
+        <Text style={[styles.username, { color: colors.mutedForeground }]}>
+          {profile?.username ?? "Guest"}
+        </Text>
+        <View style={[styles.vipPill, { backgroundColor: colors.gold }]}>
+          <MaterialCommunityIcons name="crown" size={9} color="#000" />
+          <Text style={styles.vipTxt}>VIP {profile?.vip_level ?? 0}</Text>
+        </View>
+        {/* "သင်အတွက်" pill */}
+        <TouchableOpacity style={[styles.forYouPill, { backgroundColor: colors.purple + "33", borderColor: colors.purple }]}>
+          <Text style={[styles.forYouTxt, { color: colors.purple }]}>★ သင်အတွက်</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* ── 2-column game grid ── */}
+      {loading ? (
+        <View style={styles.loading}>
+          <ActivityIndicator size="large" color={colors.gold} />
+        </View>
+      ) : (
+        <FlatList
+          data={filtered}
+          keyExtractor={item => item.id}
+          numColumns={COLS}
+          contentContainerStyle={{ padding: H_PAD, paddingBottom: 8, gap: GAP }}
+          columnWrapperStyle={{ gap: GAP }}
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <GameCard game={item} cardWidth={CARD_W} cardHeight={CARD_H} />
+          )}
+          ListEmptyComponent={
+            <View style={styles.empty}>
+              <MaterialCommunityIcons name="cards-playing-outline" size={36} color={colors.mutedForeground} />
+              <Text style={[styles.emptyTxt, { color: colors.mutedForeground }]}>ဂိမ်းများ မတွေ့ပါ</Text>
+            </View>
+          }
+        />
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen:       { flex: 1 },
-  body:         { flex: 1, flexDirection: "row" },
+  screen:    { flex: 1 },
+  loading:   { flex: 1, alignItems: "center", justifyContent: "center" },
 
-  sidebar: {
-    width: 68,
-    borderRightWidth: 1,
-    paddingTop: 8,
-    paddingBottom: 8,
+  topBar: {
+    flexDirection: "row",
     alignItems: "center",
+    borderBottomWidth: 1,
+    paddingHorizontal: 10,
+    paddingBottom: 6,
+    gap: 8,
+    minHeight: 46,
+  },
+  catScroll:   { gap: 6, alignItems: "center" },
+  catPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    borderWidth: 1,
     gap: 4,
   },
-  sidebarBtn: {
-    width: "90%",
+  catLabel:    { fontSize: 11, fontFamily: "Inter_500Medium" },
+
+  rightBar:    { flexDirection: "row", alignItems: "center", gap: 6 },
+  balancePill: {
+    flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 10,
-    borderRadius: 12,
-    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    borderWidth: 1,
+    gap: 4,
   },
-  sidebarIconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  balText:     { fontSize: 13, fontFamily: "Inter_700Bold" },
+  avatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
-  },
-  sidebarLabel: {
-    fontSize: 9,
-    fontFamily: "Inter_500Medium",
-    textAlign: "center",
+    borderWidth: 1.5,
   },
 
-  mainScroll:   { flex: 1 },
-  loadingWrap:  { flex: 1, alignItems: "center", justifyContent: "center" },
-
-  rowSection: {
-    marginBottom: 20,
-  },
-  rowTitle: {
-    fontSize: 13,
-    fontFamily: "Inter_700Bold",
+  userStrip: {
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 12,
-    marginBottom: 10,
-    letterSpacing: 0.3,
+    paddingVertical: 4,
+    borderBottomWidth: 1,
+    gap: 8,
   },
-  rowScroll: {
-    paddingHorizontal: 12,
+  username:    { fontSize: 11, fontFamily: "Inter_500Medium" },
+  vipPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 999,
+    gap: 3,
   },
+  vipTxt:      { fontSize: 9, fontFamily: "Inter_700Bold", color: "#000" },
+  forYouPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  forYouTxt:   { fontSize: 10, fontFamily: "Inter_600SemiBold" },
 
   empty: {
     alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 60,
-    gap: 12,
+    paddingVertical: 40,
+    gap: 10,
   },
-  emptyText: {
-    fontSize: 16,
-    fontFamily: "Inter_500Medium",
-  },
+  emptyTxt:    { fontSize: 14, fontFamily: "Inter_500Medium" },
 });

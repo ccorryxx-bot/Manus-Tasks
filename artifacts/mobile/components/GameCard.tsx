@@ -43,10 +43,12 @@ const GAME_ACCENT: Record<string, string> = {
 type Props = {
   game: Game;
   featured?: boolean;
+  cardWidth?: number;
+  cardHeight?: number;
   onPress?: (game: Game) => void;
 };
 
-export function GameCard({ game, featured = false, onPress }: Props) {
+export function GameCard({ game, featured = false, cardWidth, cardHeight, onPress }: Props) {
   const colors = useColors();
   const [liked, setLiked] = useState(false);
   const scaleAnim = React.useRef(new Animated.Value(1)).current;
@@ -67,8 +69,9 @@ export function GameCard({ game, featured = false, onPress }: Props) {
     Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, speed: 20 }).start();
   }
 
-  const cardW = featured ? 180 : 130;
-  const cardH = featured ? 220 : 160;
+  // If explicit dimensions passed (landscape grid), use them; otherwise fall back to featured/default sizes
+  const cardW = cardWidth  ?? (featured ? 180 : 130);
+  const cardH = cardHeight ?? (featured ? 220 : 160);
 
   return (
     <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
