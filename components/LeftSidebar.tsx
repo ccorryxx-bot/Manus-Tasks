@@ -1,6 +1,6 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
 import {
+  Image,
   Platform,
   ScrollView,
   StyleSheet,
@@ -10,77 +10,57 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useColors } from "@/hooks/useColors";
-
-type IconName = React.ComponentProps<typeof MaterialCommunityIcons>["name"];
-
-const NAV_ITEMS: {
-  id: string;
-  icon: IconName;
-  label: string;
-  iconColor?: string;
-  bgColor?: string;
-  red?: boolean;
-}[] = [
+const NAV_ITEMS = [
   {
-    id: "treasure",
-    icon: "bitcoin",
-    label: "ရတနာ",
-    iconColor: "#ffcc00",
-    bgColor: "rgba(170,68,255,0.35)",
+    id: "withdraw",
+    label: "ငွေထုတ်",
+    uri: "https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913025065.png?tr=w-80,h-80,f-webp",
+    red: false,
   },
   {
     id: "reward",
-    icon: "gift",
-    label: "ဆုလဒ်",
-    iconColor: "#cc88ff",
+    label: "ဆုလာဘ်",
+    uri: "https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/IMG_20260608_163859.png?tr=w-80,h-80,f-webp",
+    red: false,
   },
   {
     id: "vip",
-    icon: "crown",
     label: "VIP",
-    iconColor: "#ffcc00",
+    uri: "https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913465345.png?tr=w-80,h-80,f-webp",
+    red: false,
   },
   {
-    id: "ball",
-    icon: "soccer",
-    label: "ခေတ်မီဘော်",
-    iconColor: "#aabbcc",
+    id: "lucky",
+    label: "ကံကောင်းခြင်း",
+    uri: "https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913565941.png?tr=w-80,h-80,f-webp",
+    red: false,
   },
   {
-    id: "chips",
-    icon: "poker-chip",
-    label: "ဘောင်",
-    iconColor: "#ff8844",
+    id: "notify",
+    label: "အသိပေးချက်",
+    uri: "https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913673707.png?tr=w-80,h-80,f-webp",
+    red: false,
   },
   {
     id: "wheel",
-    icon: "ferris-wheel",
     label: "Lucky Wheel",
-    iconColor: "#88ddff",
+    uri: "https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913783929.png?tr=w-80,h-80,f-webp",
+    red: false,
   },
   {
-    id: "magic",
-    icon: "magic-staff",
-    label: "မြ",
-    iconColor: "#cc88ff",
-  },
-  {
-    id: "money",
-    icon: "cash-multiple",
-    label: "ငွေကြေး",
-    iconColor: "#ffffff",
+    id: "deposit",
+    label: "ငွေသွင်း",
+    uri: "https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913143971.png?tr=w-80,h-80,f-webp",
     red: true,
   },
-];
+] as const;
 
 interface LeftSidebarProps {
   activeId?: string;
   onSelect?: (id: string) => void;
 }
 
-export function LeftSidebar({ activeId = "treasure", onSelect }: LeftSidebarProps) {
-  const colors = useColors();
+export function LeftSidebar({ activeId = "withdraw", onSelect }: LeftSidebarProps) {
   const insets = useSafeAreaInsets();
   const topPad = Platform.OS === "web" ? 24 : insets.top;
   const bottomPad = Platform.OS === "web" ? 24 : insets.bottom;
@@ -98,43 +78,36 @@ export function LeftSidebar({ activeId = "treasure", onSelect }: LeftSidebarProp
       >
         {NAV_ITEMS.map((item) => {
           const isActive = activeId === item.id;
-          const isRed = item.red;
 
           return (
             <TouchableOpacity
               key={item.id}
               style={[
                 styles.navItem,
-                isRed && styles.redItem,
-                isActive && !isRed && styles.activeItem,
+                item.red && styles.redItem,
+                isActive && !item.red && styles.activeItem,
               ]}
               onPress={() => onSelect?.(item.id)}
               activeOpacity={0.75}
             >
-              {isActive && !isRed && (
-                <View style={[styles.glowRing, { borderColor: colors.accent }]} />
+              {isActive && !item.red && (
+                <View style={styles.glowRing} />
               )}
-              <View
+
+              <Image
+                source={{ uri: item.uri }}
                 style={[
-                  styles.iconWrap,
-                  item.bgColor ? { backgroundColor: item.bgColor } : null,
-                  isRed ? styles.redIconWrap : null,
-                  isActive && !isRed
-                    ? { backgroundColor: "rgba(170,68,255,0.3)" }
-                    : null,
+                  styles.icon,
+                  item.red && styles.iconRed,
                 ]}
-              >
-                <MaterialCommunityIcons
-                  name={item.icon}
-                  size={26}
-                  color={item.iconColor ?? "#ffffff"}
-                />
-              </View>
+                resizeMode="contain"
+              />
+
               <Text
                 style={[
                   styles.navLabel,
-                  isActive && { color: "#ffffff", opacity: 1 },
-                  isRed && { color: "#ffffff" },
+                  isActive && styles.navLabelActive,
+                  item.red && styles.navLabelRed,
                 ]}
                 numberOfLines={2}
               >
@@ -155,23 +128,26 @@ const styles = StyleSheet.create({
   },
   scroll: {
     alignItems: "center",
-    gap: 6,
+    gap: 4,
+    paddingHorizontal: 4,
   },
   navItem: {
     alignItems: "center",
     width: 62,
     paddingVertical: 6,
+    paddingHorizontal: 2,
     borderRadius: 10,
     position: "relative",
   },
   activeItem: {
+    backgroundColor: "rgba(170,68,255,0.2)",
     transform: [{ scale: 1.05 }],
   },
   redItem: {
     backgroundColor: "#cc0000",
     borderRadius: 10,
-    width: 62,
-    marginTop: 4,
+    marginTop: 6,
+    paddingVertical: 8,
   },
   glowRing: {
     position: "absolute",
@@ -181,25 +157,31 @@ const styles = StyleSheet.create({
     bottom: 0,
     borderRadius: 10,
     borderWidth: 1.5,
-    opacity: 0.8,
+    borderColor: "#aa44ff",
+    opacity: 0.85,
   },
-  iconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
+  icon: {
+    width: 40,
+    height: 40,
+    borderRadius: 8,
   },
-  redIconWrap: {
-    backgroundColor: "transparent",
+  iconRed: {
     width: 36,
     height: 36,
   },
   navLabel: {
     fontSize: 9,
-    color: "rgba(255,255,255,0.7)",
+    color: "rgba(255,255,255,0.65)",
     textAlign: "center",
-    marginTop: 2,
+    marginTop: 3,
     lineHeight: 12,
+  },
+  navLabelActive: {
+    color: "#ffffff",
+    opacity: 1,
+  },
+  navLabelRed: {
+    color: "#ffffff",
+    opacity: 1,
   },
 });
