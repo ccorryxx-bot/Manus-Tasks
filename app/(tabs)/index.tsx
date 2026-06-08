@@ -1,16 +1,17 @@
 import { LinearGradient } from "expo-linear-gradient";
+import { StatusBar } from "expo-status-bar";
 import React, { useCallback, useState } from "react";
 import {
   FlatList,
   Platform,
   ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
   useWindowDimensions,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { FilterIconRow } from "@/components/FilterIconRow";
 import { GameCard } from "@/components/GameCard";
@@ -120,6 +121,7 @@ const bokeh = StyleSheet.create({
 
 export default function LobbyScreen() {
   const colors = useColors();
+  const insets = useSafeAreaInsets();
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
   const isLandscape = screenWidth > screenHeight;
@@ -169,9 +171,12 @@ export default function LobbyScreen() {
     [cardWidth, isLandscape, COLUMNS],
   );
 
+  const topPad = Platform.OS === "web" ? 0 : insets.top;
+  const bottomPad = Platform.OS === "web" ? 0 : insets.bottom;
+
   return (
     <View style={styles.root}>
-      <StatusBar hidden={true} />
+      <StatusBar hidden style="light" />
 
       <LinearGradient
         colors={["#1a0a3d", "#0d1b4b"]}
@@ -181,7 +186,12 @@ export default function LobbyScreen() {
       />
       <BokehLayer />
 
-      <View style={styles.frame}>
+      <View
+        style={[
+          styles.frame,
+          { paddingTop: topPad, paddingBottom: bottomPad },
+        ]}
+      >
         {!isLandscape && (
           <LeftSidebar activeId={activeNav} onSelect={setActiveNav} />
         )}

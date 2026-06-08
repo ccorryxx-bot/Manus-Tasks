@@ -93,6 +93,7 @@ export function LeftSidebar({ activeId = "withdraw", onSelect }: LeftSidebarProp
               <Image
                 source={{ uri: item.uri }}
                 style={styles.icon}
+                resizeMode="contain"
               />
               <Text style={styles.navLabel} numberOfLines={2}>
                 {item.label}
@@ -135,7 +136,6 @@ const styles = StyleSheet.create({
   icon: {
     width: 48,
     height: 48,
-    resizeMode: "contain",
     backgroundColor: "transparent",
   },
   navLabel: {
