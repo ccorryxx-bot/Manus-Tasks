@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
-import { Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Image, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useApp } from "@/context/AppContext";
 import { useColors } from "@/hooks/useColors";
@@ -35,7 +35,7 @@ export default function VIPScreen() {
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: Platform.OS === "web" ? 100 : 90 }]}>
         {/* Current level card */}
         <View style={[styles.currentCard, { backgroundColor: current.color + "22", borderColor: current.color + "66" }]}>
-          <MaterialCommunityIcons name="crown" size={40} color={current.color} />
+          <Image source={require("../../assets/images/vip-badge.png")} style={styles.vipBadgeImg} resizeMode="contain" />
           <Text style={[styles.levelName, { color: current.color }]}>{current.name}</Text>
           <Text style={[styles.levelLabel, { color: colors.mutedForeground }]}>Current Level</Text>
 
@@ -113,6 +113,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   levelName: { fontSize: 28, fontFamily: "Inter_700Bold" },
+  vipBadgeImg: { width: 80, height: 80 },
   levelLabel: { fontSize: 13, fontFamily: "Inter_500Medium" },
   progressContainer: { width: "100%", marginTop: 8, gap: 6 },
   progressBg: { height: 8, borderRadius: 4, width: "100%" },

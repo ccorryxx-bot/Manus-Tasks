@@ -1,0 +1,44 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "JwBOK0fEXEGkPNJeTG0zA"
+uri = "file://artifacts/mobile/assets/images/icon.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "0Phf4fMRnQ5R2CjbVIu5x"
+uri = "file://artifacts/mobile/assets/images/game-buffalo.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "Tss0YW1oZ2xWrnbO-ipaw"
+uri = "file://artifacts/mobile/assets/images/game-dragon.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "8MynOYcjr8x98c0zhKql_"
+uri = "file://artifacts/mobile/assets/images/game-koi.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "skEapDBuvgiJ0rWHmVss2"
+uri = "file://artifacts/mobile/assets/images/lucky-wheel.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "aGMJJclhzQBF_OpK0TJlU"
+uri = "file://artifacts/mobile/assets/images/vip-badge.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "GwkxQhwS9mDwyfOQrRoWx"
+uri = "file://artifacts/mobile/assets/images/bg-casino.png"
+type = "image"
+title = "generated_image"

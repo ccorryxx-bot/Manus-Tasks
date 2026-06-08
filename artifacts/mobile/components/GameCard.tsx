@@ -1,8 +1,14 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
-import { Animated, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Animated, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useColors } from "@/hooks/useColors";
 import type { Game } from "@/lib/supabase";
+
+const GAME_IMAGES: Record<string, any> = {
+  "African Buffalo": require("../assets/images/game-buffalo.png"),
+  "Lucky KOI": require("../assets/images/game-koi.png"),
+  "Dragon Tiger": require("../assets/images/game-dragon.png"),
+};
 
 const GAME_COLORS: Record<string, string[]> = {
   "African Buffalo": ["#1a4a1a", "#2d7a2d"],
@@ -68,11 +74,14 @@ export function GameCard({ game, onPress }: Props) {
       >
         {/* Thumbnail */}
         <View style={[styles.thumbnail, { backgroundColor: bgColors[0] }]}>
-          {/* Gradient overlay simulation */}
-          <View style={[styles.gradientOverlay, { backgroundColor: bgColors[1] + "88" }]} />
-
-          {/* Game name initials */}
-          <Text style={styles.initials}>{initials}</Text>
+          {GAME_IMAGES[game.name] ? (
+            <Image source={GAME_IMAGES[game.name]} style={StyleSheet.absoluteFill} resizeMode="cover" />
+          ) : (
+            <>
+              <View style={[styles.gradientOverlay, { backgroundColor: bgColors[1] + "88" }]} />
+              <Text style={styles.initials}>{initials}</Text>
+            </>
+          )}
           <Text style={styles.gameNameInCard} numberOfLines={2}>
             {game.name}
           </Text>

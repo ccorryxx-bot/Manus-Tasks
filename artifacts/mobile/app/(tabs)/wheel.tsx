@@ -3,6 +3,7 @@ import React, { useRef, useState } from "react";
 import {
   Animated,
   Easing,
+  Image,
   Platform,
   StyleSheet,
   Text,
@@ -89,19 +90,18 @@ export default function WheelScreen() {
           <MaterialCommunityIcons name="menu-down" size={40} color={colors.gold} />
         </View>
 
-        {/* Wheel */}
-        <Animated.View
-          style={[
-            styles.wheel,
-            {
-              width: WHEEL_SIZE,
-              height: WHEEL_SIZE,
-              borderRadius: WHEEL_SIZE / 2,
-              transform: [{ rotate }],
-              borderColor: colors.gold,
-            },
-          ]}
-        >
+        {/* Wheel image spinning */}
+        <Animated.Image
+          source={require("../../assets/images/lucky-wheel.png")}
+          style={[styles.wheelImage, { transform: [{ rotate }] }]}
+          resizeMode="contain"
+        />
+
+        {/* Wheel segments overlay */}
+        <Animated.View style={{ position: "absolute" }}></Animated.View>
+
+        {/* Wheel segments (hidden, image used instead) */}
+        <Animated.View style={{ display: "none" }}>
           {SEGMENTS.map((seg, i) => {
             const rotation = i * segAngle;
             return (
@@ -244,6 +244,10 @@ const styles = StyleSheet.create({
     textShadowColor: "rgba(0,0,0,0.5)",
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
+  },
+  wheelImage: {
+    width: 280,
+    height: 280,
   },
   wheelCenter: {
     position: "absolute",
