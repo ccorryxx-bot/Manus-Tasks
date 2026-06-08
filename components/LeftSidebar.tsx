@@ -1,57 +1,48 @@
-import React from "react";
+import { LinearGradient } from "expo-linear-gradient";
+import React, { useState } from "react";
 import {
   Image,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const NAV_ITEMS = [
+const ITEMS = [
   {
-    id: "withdraw",
     label: "ငွေထုတ်",
-    uri: "https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913025065.png?tr=w-80,h-80,f-webp",
-    red: false,
+    uri: "https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913025065.png?tr=w-88,h-88,f-webp",
+    isRed: false,
   },
   {
-    id: "reward",
     label: "ဆုလာဘ်",
-    uri: "https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/IMG_20260608_163859.png?tr=w-80,h-80,f-webp",
-    red: false,
+    uri: "https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/IMG_20260608_163859.png?tr=w-88,h-88,f-webp",
+    isRed: false,
   },
   {
-    id: "vip",
     label: "VIP",
-    uri: "https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913465345.png?tr=w-80,h-80,f-webp",
-    red: false,
+    uri: "https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913465345.png?tr=w-88,h-88,f-webp",
+    isRed: false,
   },
   {
-    id: "lucky",
     label: "ကံကောင်းခြင်း",
-    uri: "https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913565941.png?tr=w-80,h-80,f-webp",
-    red: false,
+    uri: "https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913565941.png?tr=w-88,h-88,f-webp",
+    isRed: false,
   },
   {
-    id: "notify",
     label: "အသိပေးချက်",
-    uri: "https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913673707.png?tr=w-80,h-80,f-webp",
-    red: false,
+    uri: "https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913673707.png?tr=w-88,h-88,f-webp",
+    isRed: false,
   },
   {
-    id: "wheel",
     label: "Lucky Wheel",
-    uri: "https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913783929.png?tr=w-80,h-80,f-webp",
-    red: false,
+    uri: "https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913783929.png?tr=w-88,h-88,f-webp",
+    isRed: false,
   },
   {
-    id: "deposit",
     label: "ငွေသွင်း",
-    uri: "https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913143971.png?tr=w-80,h-80,f-webp",
-    red: true,
+    uri: "https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913143971.png?tr=w-88,h-88,f-webp",
+    isRed: true,
   },
 ] as const;
 
@@ -60,89 +51,91 @@ interface LeftSidebarProps {
   onSelect?: (id: string) => void;
 }
 
-export function LeftSidebar({ activeId = "withdraw", onSelect }: LeftSidebarProps) {
-  const insets = useSafeAreaInsets();
-  const topPad = Platform.OS === "web" ? 24 : insets.top;
-  const bottomPad = Platform.OS === "web" ? 24 : insets.bottom;
+export function LeftSidebar({ activeId, onSelect }: LeftSidebarProps) {
+  const [selected, setSelected] = useState(activeId ?? ITEMS[0].label);
+
+  const handlePress = (label: string) => {
+    setSelected(label);
+    onSelect?.(label);
+  };
 
   return (
-    <View
-      style={[
-        styles.container,
-        { paddingTop: topPad + 4, paddingBottom: bottomPad + 4 },
-      ]}
+    <LinearGradient
+      colors={["#1a0a3d", "#0d1b4b"]}
+      style={styles.gradient}
     >
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scroll}
       >
-        {NAV_ITEMS.map((item) => {
-          const isActive = activeId === item.id;
+        {ITEMS.map((item) => {
+          const isActive = selected === item.label;
 
           return (
             <TouchableOpacity
-              key={item.id}
-              style={[
-                styles.navItem,
-                item.red && styles.redItem,
-                isActive && !item.red && styles.activeItem,
-              ]}
-              onPress={() => onSelect?.(item.id)}
+              key={item.label}
               activeOpacity={0.75}
+              onPress={() => handlePress(item.label)}
+              style={[
+                styles.item,
+                isActive && !item.isRed && styles.itemActive,
+                item.isRed && styles.itemRed,
+              ]}
             >
               <Image
                 source={{ uri: item.uri }}
                 style={styles.icon}
                 resizeMode="contain"
               />
-              <Text style={styles.navLabel} numberOfLines={2}>
+              <Text style={styles.label} numberOfLines={2}>
                 {item.label}
               </Text>
             </TouchableOpacity>
           );
         })}
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    width: 70,
-    zIndex: 10,
+  gradient: {
+    width: 72,
+    height: "100%",
+    paddingTop: 10,
+    alignItems: "center",
   },
   scroll: {
     alignItems: "center",
-    paddingHorizontal: 1,
+    paddingBottom: 12,
   },
-  navItem: {
-    width: 68,
-    height: 80,
+  item: {
+    width: 70,
     alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 14,
+    paddingVertical: 5,
+    marginBottom: 4,
     backgroundColor: "transparent",
-    marginBottom: 8,
+    borderRadius: 12,
   },
-  activeItem: {
-    backgroundColor: "rgba(120,40,200,0.5)",
+  itemActive: {
+    backgroundColor: "rgba(110,30,190,0.5)",
     borderWidth: 1,
     borderColor: "#9933ff",
   },
-  redItem: {
+  itemRed: {
     backgroundColor: "#cc0000",
-    borderRadius: 14,
+    borderRadius: 12,
+    width: 68,
+    paddingVertical: 6,
   },
   icon: {
-    width: 48,
-    height: 48,
-    backgroundColor: "transparent",
+    width: 44,
+    height: 44,
   },
-  navLabel: {
-    color: "#ffffff",
-    fontSize: 10,
-    marginTop: 4,
+  label: {
+    color: "#fff",
+    fontSize: 9,
     textAlign: "center",
-    lineHeight: 13,
+    marginTop: 2,
   },
 });
