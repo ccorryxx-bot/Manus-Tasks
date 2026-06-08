@@ -6,6 +6,24 @@ import { Platform, StyleSheet, View } from "react-native";
 import { useColors } from "@/hooks/useColors";
 import { useApp } from "@/context/AppContext";
 
+type TabIconProps = {
+  name: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
+  color: string;
+  size?: number;
+  bgColor?: string;
+};
+
+function TabIcon({ name, color, size = 22, bgColor }: TabIconProps) {
+  if (bgColor) {
+    return (
+      <View style={[tabStyles.iconBubble, { backgroundColor: bgColor + "33", borderColor: bgColor + "55" }]}>
+        <MaterialCommunityIcons name={name} size={size} color={color} />
+      </View>
+    );
+  }
+  return <MaterialCommunityIcons name={name} size={size} color={color} />;
+}
+
 export default function TabLayout() {
   const colors = useColors();
   const { unreadCount } = useApp();
@@ -20,28 +38,21 @@ export default function TabLayout() {
         headerShown: false,
         tabBarStyle: {
           position: "absolute",
-          backgroundColor: isIOS ? "transparent" : colors.tabBg,
+          backgroundColor: isIOS ? "transparent" : colors.tabBg ?? "#0D1035",
           borderTopWidth: 1,
-          borderTopColor: colors.border,
+          borderTopColor: "rgba(255,255,255,0.08)",
           elevation: 0,
-          height: isWeb ? 84 : 60,
-          paddingBottom: isWeb ? 34 : 8,
+          height: isWeb ? 84 : 64,
+          paddingBottom: isWeb ? 34 : 10,
           paddingTop: 6,
         },
         tabBarBackground: () =>
           isIOS ? (
-            <BlurView
-              intensity={90}
-              tint="dark"
-              style={StyleSheet.absoluteFill}
-            />
-          ) : isWeb ? (
-            <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.tabBg }]} />
+            <BlurView intensity={90} tint="dark" style={StyleSheet.absoluteFill} />
           ) : null,
         tabBarLabelStyle: {
-          fontSize: 10,
+          fontSize: 9,
           fontFamily: "Inter_500Medium",
-          marginBottom: 2,
         },
       }}
     >
@@ -49,8 +60,12 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "ဂိမ်းများ",
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="cards-playing" size={24} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon
+              name="cards-playing"
+              color={color}
+              bgColor={focused ? colors.gold : undefined}
+            />
           ),
         }}
       />
@@ -58,8 +73,12 @@ export default function TabLayout() {
         name="prizes"
         options={{
           title: "ဆုငွေ",
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="gift" size={24} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon
+              name="gift"
+              color={color}
+              bgColor={focused ? "#F97316" : undefined}
+            />
           ),
         }}
       />
@@ -67,8 +86,12 @@ export default function TabLayout() {
         name="vip"
         options={{
           title: "VIP",
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="crown" size={24} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon
+              name="crown"
+              color={color}
+              bgColor={focused ? "#FFD700" : undefined}
+            />
           ),
         }}
       />
@@ -76,21 +99,28 @@ export default function TabLayout() {
         name="freelance"
         options={{
           title: "Freelance",
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="briefcase" size={24} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon
+              name="briefcase-check"
+              color={color}
+              bgColor={focused ? "#22C55E" : undefined}
+            />
           ),
         }}
       />
       <Tabs.Screen
         name="notifications"
         options={{
-          title: "Notifications",
+          title: "Notif",
           tabBarIcon: ({ color, focused }) => (
             <View>
-              <MaterialCommunityIcons name="bell" size={24} color={color} />
+              <TabIcon
+                name="bell"
+                color={color}
+                bgColor={focused ? "#A855F7" : undefined}
+              />
               {unreadCount > 0 && (
-                <View style={[styles.badge, { backgroundColor: "#EF4444" }]}>
-                </View>
+                <View style={tabStyles.notifDot} />
               )}
             </View>
           ),
@@ -100,8 +130,12 @@ export default function TabLayout() {
         name="wheel"
         options={{
           title: "Wheel",
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="rotate-3d-variant" size={24} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon
+              name="ferris-wheel"
+              color={color}
+              bgColor={focused ? "#EC4899" : undefined}
+            />
           ),
         }}
       />
@@ -109,8 +143,12 @@ export default function TabLayout() {
         name="service"
         options={{
           title: "ဝန်ဆောင်မှု",
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="headset" size={24} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon
+              name="headset"
+              color={color}
+              bgColor={focused ? "#60A5FA" : undefined}
+            />
           ),
         }}
       />
@@ -118,13 +156,24 @@ export default function TabLayout() {
   );
 }
 
-const styles = StyleSheet.create({
-  badge: {
+const tabStyles = StyleSheet.create({
+  iconBubble: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+  },
+  notifDot: {
     position: "absolute",
-    top: -2,
-    right: -4,
+    top: 2,
+    right: 2,
     width: 8,
     height: 8,
     borderRadius: 4,
+    backgroundColor: "#EF4444",
+    borderWidth: 1.5,
+    borderColor: "#0D1035",
   },
 });
