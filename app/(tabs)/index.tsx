@@ -1,17 +1,16 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { StatusBar } from "expo-status-bar";
 import React, { useCallback, useState } from "react";
 import {
   FlatList,
   Platform,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
   useWindowDimensions,
 } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { FilterIconRow } from "@/components/FilterIconRow";
 import { GameCard } from "@/components/GameCard";
@@ -121,7 +120,6 @@ const bokeh = StyleSheet.create({
 
 export default function LobbyScreen() {
   const colors = useColors();
-  const insets = useSafeAreaInsets();
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
   const isLandscape = screenWidth > screenHeight;
@@ -171,17 +169,9 @@ export default function LobbyScreen() {
     [cardWidth, isLandscape, COLUMNS],
   );
 
-  const topPad = Platform.OS === "web" ? 0 : insets.top;
-  const bottomPad = Platform.OS === "web" ? 0 : insets.bottom;
-
   return (
     <View style={styles.root}>
-      <StatusBar
-        hidden={isLandscape}
-        style="light"
-        translucent={!isLandscape}
-        backgroundColor="transparent"
-      />
+      <StatusBar hidden={true} />
 
       <LinearGradient
         colors={["#1a0a3d", "#0d1b4b"]}
@@ -191,15 +181,7 @@ export default function LobbyScreen() {
       />
       <BokehLayer />
 
-      <View
-        style={[
-          styles.frame,
-          {
-            paddingTop: isLandscape ? 0 : topPad,
-            paddingBottom: isLandscape ? 0 : bottomPad,
-          },
-        ]}
-      >
+      <View style={styles.frame}>
         {!isLandscape && (
           <LeftSidebar activeId={activeNav} onSelect={setActiveNav} />
         )}
@@ -221,17 +203,9 @@ export default function LobbyScreen() {
 
           <ScrollView
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={[
-              styles.scrollContent,
-              { paddingBottom: isLandscape ? 8 : 12 },
-            ]}
+            contentContainerStyle={styles.scrollContent}
           >
-            <View
-              style={[
-                styles.heroWrap,
-                { paddingHorizontal: H_PAD, marginBottom: ROW_GAP },
-              ]}
-            >
+            <View style={[styles.heroWrap, { paddingHorizontal: H_PAD, marginBottom: ROW_GAP }]}>
               <GameCard
                 name={featuredGame.name}
                 image={featuredGame.image}
@@ -284,6 +258,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingTop: 4,
+    paddingBottom: 12,
   },
   heroWrap: {},
   gridContent: {},

@@ -90,27 +90,11 @@ export function LeftSidebar({ activeId = "withdraw", onSelect }: LeftSidebarProp
               onPress={() => onSelect?.(item.id)}
               activeOpacity={0.75}
             >
-              {isActive && !item.red && (
-                <View style={styles.glowRing} />
-              )}
-
               <Image
                 source={{ uri: item.uri }}
-                style={[
-                  styles.icon,
-                  item.red && styles.iconRed,
-                ]}
-                resizeMode="contain"
+                style={styles.icon}
               />
-
-              <Text
-                style={[
-                  styles.navLabel,
-                  isActive && styles.navLabelActive,
-                  item.red && styles.navLabelRed,
-                ]}
-                numberOfLines={2}
-              >
+              <Text style={styles.navLabel} numberOfLines={2}>
                 {item.label}
               </Text>
             </TouchableOpacity>
@@ -128,60 +112,37 @@ const styles = StyleSheet.create({
   },
   scroll: {
     alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 4,
+    paddingHorizontal: 1,
   },
   navItem: {
+    width: 68,
+    height: 80,
     alignItems: "center",
-    width: 62,
-    paddingVertical: 6,
-    paddingHorizontal: 2,
-    borderRadius: 10,
-    position: "relative",
+    justifyContent: "center",
+    borderRadius: 14,
+    backgroundColor: "transparent",
+    marginBottom: 8,
   },
   activeItem: {
-    backgroundColor: "rgba(170,68,255,0.2)",
-    transform: [{ scale: 1.05 }],
+    backgroundColor: "rgba(120,40,200,0.5)",
+    borderWidth: 1,
+    borderColor: "#9933ff",
   },
   redItem: {
     backgroundColor: "#cc0000",
-    borderRadius: 10,
-    marginTop: 6,
-    paddingVertical: 8,
-  },
-  glowRing: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: "#aa44ff",
-    opacity: 0.85,
+    borderRadius: 14,
   },
   icon: {
-    width: 40,
-    height: 40,
-    borderRadius: 8,
-  },
-  iconRed: {
-    width: 36,
-    height: 36,
+    width: 48,
+    height: 48,
+    resizeMode: "contain",
+    backgroundColor: "transparent",
   },
   navLabel: {
-    fontSize: 9,
-    color: "rgba(255,255,255,0.65)",
+    color: "#ffffff",
+    fontSize: 10,
+    marginTop: 4,
     textAlign: "center",
-    marginTop: 3,
-    lineHeight: 12,
-  },
-  navLabelActive: {
-    color: "#ffffff",
-    opacity: 1,
-  },
-  navLabelRed: {
-    color: "#ffffff",
-    opacity: 1,
+    lineHeight: 13,
   },
 });
