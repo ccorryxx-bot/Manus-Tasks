@@ -2,18 +2,16 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
   Image,
-  ImageSourcePropType,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-
 import { useColors } from "@/hooks/useColors";
 
 interface GameCardProps {
   name: string;
-  image: ImageSourcePropType;
+  imageUri: string;
   players: number;
   badge?: "New!" | "Hot!" | null;
   featured?: boolean;
@@ -24,7 +22,7 @@ interface GameCardProps {
 
 export function GameCard({
   name,
-  image,
+  imageUri,
   players,
   badge,
   featured = false,
@@ -34,7 +32,6 @@ export function GameCard({
 }: GameCardProps) {
   const colors = useColors();
   const [liked, setLiked] = useState(false);
-
   const height = cardHeight ?? (featured ? 200 : 160);
 
   return (
@@ -43,7 +40,11 @@ export function GameCard({
       onPress={onPress}
       activeOpacity={0.88}
     >
-      <Image source={image} style={StyleSheet.absoluteFill} resizeMode="cover" />
+      <Image
+        source={{ uri: imageUri }}
+        style={StyleSheet.absoluteFill}
+        resizeMode="cover"
+      />
 
       <View style={styles.overlay} />
 
@@ -60,12 +61,7 @@ export function GameCard({
       </TouchableOpacity>
 
       {badge && (
-        <View
-          style={[
-            styles.badge,
-            { backgroundColor: badge === "Hot!" ? "#ff6600" : "#00cc44" },
-          ]}
-        >
+        <View style={[styles.badge, { backgroundColor: badge === "Hot!" ? "#ff6600" : "#00cc44" }]}>
           <Text style={styles.badgeText}>{badge}</Text>
         </View>
       )}
@@ -99,11 +95,7 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.18)",
   },
-  heartBtn: {
-    position: "absolute",
-    top: 7,
-    left: 7,
-  },
+  heartBtn: { position: "absolute", top: 7, left: 7 },
   badge: {
     position: "absolute",
     top: 6,
@@ -112,11 +104,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 6,
   },
-  badgeText: {
-    color: "#fff",
-    fontSize: 10,
-    fontWeight: "700",
-  },
+  badgeText: { color: "#fff", fontSize: 10, fontWeight: "700" },
   featuredNameWrap: {
     position: "absolute",
     bottom: 28,
@@ -153,14 +141,6 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 10,
   },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  playerText: {
-    color: "#fff",
-    fontSize: 11,
-    fontWeight: "700",
-  },
+  dot: { width: 6, height: 6, borderRadius: 3 },
+  playerText: { color: "#fff", fontSize: 11, fontWeight: "700" },
 });
