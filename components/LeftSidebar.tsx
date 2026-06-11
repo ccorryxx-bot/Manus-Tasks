@@ -2,51 +2,22 @@ import { LinearGradient } from "expo-linear-gradient";
 import React, { useState } from "react";
 import {
   Image,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
+  View,
 } from "react-native";
 
-// e-trim removes white background from PNG images via ImageKit
 const TR = "?tr=w-88,h-88,f-webp,e-trim";
 
 const ITEMS = [
-  {
-    label: "ငွေထုတ်",
-    uri: `https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913025065.png${TR}`,
-    isRed: false,
-  },
-  {
-    label: "ဆုလာဘ်",
-    uri: `https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/IMG_20260608_163859.png${TR}`,
-    isRed: false,
-  },
-  {
-    label: "VIP",
-    uri: `https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913465345.png${TR}`,
-    isRed: false,
-  },
-  {
-    label: "ကံကောင်းခြင်း",
-    uri: `https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913565941.png${TR}`,
-    isRed: false,
-  },
-  {
-    label: "အသိပေးချက်",
-    uri: `https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913673707.png${TR}`,
-    isRed: false,
-  },
-  {
-    label: "Lucky Wheel",
-    uri: `https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913783929.png${TR}`,
-    isRed: false,
-  },
-  {
-    label: "ငွေသွင်း",
-    uri: `https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913143971.png${TR}`,
-    isRed: true,
-  },
+  { label: "ငွေထုတ်",      uri: `https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913025065.png${TR}`,    isRed: false },
+  { label: "ဆုလာဘ်",       uri: `https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/IMG_20260608_163859.png${TR}`, isRed: false },
+  { label: "VIP",           uri: `https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913465345.png${TR}`,    isRed: false },
+  { label: "ကံကောင်းခြင်း", uri: `https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913565941.png${TR}`,    isRed: false },
+  { label: "အသိပေးချက်",   uri: `https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913673707.png${TR}`,    isRed: false },
+  { label: "Lucky Wheel",   uri: `https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913783929.png${TR}`,    isRed: false },
+  { label: "ငွေသွင်း",     uri: `https://ik.imagekit.io/rbok01qam/Native%20App%20icons%20img/1780913143971.png${TR}`,    isRed: true  },
 ] as const;
 
 interface LeftSidebarProps {
@@ -67,13 +38,10 @@ export function LeftSidebar({ activeId, onSelect }: LeftSidebarProps) {
       colors={["#1a0a3d", "#0d1b4b"]}
       style={styles.gradient}
     >
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scroll}
-      >
+      {/* space-evenly ဆိုတော့ buttons တွေ အကုန် ညီညီမျှမျှ ကြားဝေပေးမယ် */}
+      <View style={styles.inner}>
         {ITEMS.map((item) => {
           const isActive = selected === item.label;
-
           return (
             <TouchableOpacity
               key={item.label}
@@ -96,7 +64,7 @@ export function LeftSidebar({ activeId, onSelect }: LeftSidebarProps) {
             </TouchableOpacity>
           );
         })}
-      </ScrollView>
+      </View>
     </LinearGradient>
   );
 }
@@ -104,22 +72,20 @@ export function LeftSidebar({ activeId, onSelect }: LeftSidebarProps) {
 const styles = StyleSheet.create({
   gradient: {
     width: 72,
-    alignSelf: "stretch",   // ← fix: was height:"100%", now stretches in flex row
-    paddingTop: 10,
-    alignItems: "center",
+    alignSelf: "stretch",
   },
-  scroll: {
+  inner: {
+    flex: 1,
     alignItems: "center",
-    paddingBottom: 12,
+    justifyContent: "space-evenly",  // ← ဒါပဲ key fix
+    paddingVertical: 8,
   },
   item: {
-    width: 70,
+    width: 68,
     alignItems: "center",
     paddingVertical: 5,
-    marginBottom: 4,
-    backgroundColor: "transparent",
     borderRadius: 12,
-    borderWidth: 0,
+    backgroundColor: "transparent",
   },
   itemActive: {
     backgroundColor: "rgba(110,30,190,0.5)",
@@ -129,13 +95,13 @@ const styles = StyleSheet.create({
   itemRed: {
     backgroundColor: "#cc0000",
     borderRadius: 12,
-    width: 68,
+    width: 66,
     paddingVertical: 6,
   },
   icon: {
-    width: 48,
-    height: 48,
-    backgroundColor: "transparent",  // ← explicit transparent bg on image
+    width: 46,
+    height: 46,
+    backgroundColor: "transparent",
   },
   label: {
     color: "#fff",
