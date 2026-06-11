@@ -7,11 +7,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { useColors } from "@/hooks/useColors";
 
 interface GameCardProps {
   name: string;
-  imageUri: string;
+  imageUri?: string;
+  bgColors?: string[];
   players: number;
   badge?: "New!" | "Hot!" | null;
   featured?: boolean;
@@ -23,6 +25,7 @@ interface GameCardProps {
 export function GameCard({
   name,
   imageUri,
+  bgColors = ["#2d1b6b", "#1a0a3d"],
   players,
   badge,
   featured = false,
@@ -40,14 +43,25 @@ export function GameCard({
       onPress={onPress}
       activeOpacity={0.88}
     >
-      <Image
-        source={{ uri: imageUri }}
-        style={StyleSheet.absoluteFill}
-        resizeMode="cover"
-      />
+      {/* Background — image if available, else gradient */}
+      {imageUri ? (
+        <Image
+          source={{ uri: imageUri }}
+          style={StyleSheet.absoluteFill}
+          resizeMode="cover"
+        />
+      ) : (
+        <LinearGradient
+          colors={bgColors as [string, string]}
+          style={StyleSheet.absoluteFill}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        />
+      )}
 
       <View style={styles.overlay} />
 
+      {/* Heart button */}
       <TouchableOpacity
         style={styles.heartBtn}
         onPress={() => setLiked((v) => !v)}
@@ -60,23 +74,29 @@ export function GameCard({
         />
       </TouchableOpacity>
 
+      {/* Badge */}
       {badge && (
-        <View style={[styles.badge, { backgroundColor: badge === "Hot!" ? "#ff6600" : "#00cc44" }]}>
+        <View style={[styles.badge, {
+          backgroundColor: badge === "Hot!" ? "#ff6600" : "#00cc44"
+        }]}>
           <Text style={styles.badgeText}>{badge}</Text>
         </View>
       )}
 
-      {featured && (
-        <View style={styles.featuredNameWrap}>
-          <Text style={styles.featuredName} numberOfLines={2}>
-            {name.toUpperCase()}
-          </Text>
-        </View>
-      )}
+      {/* Game name — always show */}
+      <View style={[styles.nameWrap, featured && styles.nameWrapFeatured]}>
+        <Text
+          style={[styles.gameName, featured && styles.gameNameFeatured]}
+          numberOfLines={2}
+        >
+          {name.toUpperCase()}
+        </Text>
+      </View>
 
+      {/* Player count */}
       <View style={styles.bottom}>
         <View style={styles.playerBadge}>
-          <View style={[styles.dot, { backgroundColor: "#00cc44" }]} />
+          <View style={styles.dot} />
           <Text style={styles.playerText}>{players}</Text>
         </View>
       </View>
@@ -93,7 +113,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.18)",
+    backgroundColor: "rgba(0,0,0,0.25)",
   },
   heartBtn: { position: "absolute", top: 7, left: 7 },
   badge: {
@@ -105,13 +125,24 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   badgeText: { color: "#fff", fontSize: 10, fontWeight: "700" },
-  featuredNameWrap: {
+  nameWrap: {
     position: "absolute",
     bottom: 28,
     left: 10,
+    right: 10,
+  },
+  nameWrapFeatured: {
+    bottom: 32,
+    left: 12,
     right: 60,
   },
-  featuredName: {
+  gameName: {
+    color: "rgba(255,255,255,0.6)",
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 0.5,
+  },
+  gameNameFeatured: {
     color: "#ffffff",
     fontSize: 20,
     fontWeight: "900",
@@ -141,6 +172,6 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 10,
   },
-  dot: { width: 6, height: 6, borderRadius: 3 },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#00cc44" },
   playerText: { color: "#fff", fontSize: 11, fontWeight: "700" },
 });
