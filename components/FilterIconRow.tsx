@@ -1,47 +1,43 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import React from "react";
-import {
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-type FilterId = "heart" | "ticket" | "news" | "fire";
+export type FilterId = "pp" | "jili" | "fishing" | "favorite";
 
 const FILTERS: {
   id: FilterId;
-  type: "ionicons" | "mci";
-  name: string;
+  label: string;
+  icon: string;
+  iconLib: "ionicons" | "mci";
   activeColor: string;
-  inactiveBg: string;
 }[] = [
   {
-    id: "heart",
-    type: "ionicons",
-    name: "heart-outline",
-    activeColor: "#ff4488",
-    inactiveBg: "rgba(20,10,60,0.75)",
-  },
-  {
-    id: "ticket",
-    type: "mci",
-    name: "ticket-outline",
-    activeColor: "#88aaff",
-    inactiveBg: "rgba(20,10,60,0.75)",
-  },
-  {
-    id: "news",
-    type: "ionicons",
-    name: "newspaper-outline",
-    activeColor: "#88ddff",
-    inactiveBg: "rgba(20,10,60,0.75)",
-  },
-  {
-    id: "fire",
-    type: "ionicons",
-    name: "flame",
+    id: "pp",
+    label: "Pragmatic",
+    icon: "game-controller-outline",
+    iconLib: "ionicons",
     activeColor: "#ff6600",
-    inactiveBg: "rgba(20,10,60,0.75)",
+  },
+  {
+    id: "jili",
+    label: "Jili",
+    icon: "cards-playing-outline",
+    iconLib: "mci",
+    activeColor: "#aa44ff",
+  },
+  {
+    id: "fishing",
+    label: "Fishing",
+    icon: "fish-outline",
+    iconLib: "mci",
+    activeColor: "#00aaff",
+  },
+  {
+    id: "favorite",
+    label: "Favorite",
+    icon: "heart",
+    iconLib: "ionicons",
+    activeColor: "#ff4488",
   },
 ];
 
@@ -51,37 +47,38 @@ interface FilterIconRowProps {
 }
 
 export function FilterIconRow({
-  activeFilter = "fire",
+  activeFilter = "pp",
   onFilterChange,
 }: FilterIconRowProps) {
   return (
     <View style={styles.container}>
       <View style={styles.pill}>
-        {FILTERS.map((filter) => {
-          const isActive = activeFilter === filter.id;
+        {FILTERS.map((f) => {
+          const isActive = activeFilter === f.id;
           return (
             <TouchableOpacity
-              key={filter.id}
+              key={f.id}
               style={[
-                styles.iconBtn,
-                { backgroundColor: isActive ? filter.activeColor : filter.inactiveBg },
+                styles.btn,
+                {
+                  backgroundColor: isActive
+                    ? f.activeColor
+                    : "rgba(20,10,60,0.75)",
+                },
               ]}
-              onPress={() => onFilterChange?.(filter.id)}
+              onPress={() => onFilterChange?.(f.id)}
               activeOpacity={0.75}
             >
-              {filter.type === "ionicons" ? (
-                <Ionicons
-                  name={filter.name as any}
-                  size={20}
-                  color="#ffffff"
-                />
+              {f.iconLib === "ionicons" ? (
+                <Ionicons name={f.icon as any} size={18} color="#fff" />
               ) : (
                 <MaterialCommunityIcons
-                  name={filter.name as any}
-                  size={20}
-                  color="#ffffff"
+                  name={f.icon as any}
+                  size={18}
+                  color="#fff"
                 />
               )}
+              <Text style={styles.label}>{f.label}</Text>
             </TouchableOpacity>
           );
         })}
@@ -98,17 +95,23 @@ const styles = StyleSheet.create({
   },
   pill: {
     flexDirection: "row",
-    gap: 10,
+    gap: 8,
     backgroundColor: "rgba(10,5,40,0.6)",
     borderRadius: 28,
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingVertical: 6,
   },
-  iconBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  btn: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  label: {
+    color: "#fff",
+    fontSize: 11,
+    fontWeight: "700",
   },
 });
