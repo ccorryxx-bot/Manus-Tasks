@@ -5,7 +5,6 @@ import {
   Image, StyleSheet, Text,
   TouchableOpacity, View,
 } from "react-native";
-import { useColors } from "@/hooks/useColors";
 
 interface GameCardProps {
   name: string;
@@ -26,22 +25,26 @@ export function GameCard({
   players, badge, featured = false,
   liked = false, onLike, onPress, cardWidth, cardHeight,
 }: GameCardProps) {
-  const colors = useColors();
   const W = cardWidth  ?? 160;
-  const H = cardHeight ?? (featured ? 200 : 104);
+  const H = cardHeight ?? W; // Square by default
 
-  // Rotate image 90deg inside card to convert landscape→portrait fill
-  // When image rotates 90deg: swap W/H for correct fill
-  const imgSize = Math.max(W, H);
+  const imgSize = Math.max(W, H) * 1.2;
 
   return (
     <TouchableOpacity
-      style={[styles.card, { width: W, height: H, borderColor: "rgba(255,255,255,0.12)" }]}
+      style={[styles.card, {
+        width: W,
+        height: H,
+        borderRadius: featured ? 16 : 18,
+      }]}
       onPress={onPress}
       activeOpacity={0.88}
     >
-      {/* Image clipping container */}
-      <View style={[StyleSheet.absoluteFill, { overflow: "hidden", borderRadius: 14 }]}>
+      {/* Image with 90deg rotation */}
+      <View style={[StyleSheet.absoluteFill, {
+        overflow: "hidden",
+        borderRadius: featured ? 16 : 18,
+      }]}>
         {imageUri ? (
           <Image
             source={{ uri: imageUri }}
@@ -64,8 +67,7 @@ export function GameCard({
         )}
       </View>
 
-      {/* Glassmorphism overlay */}
-      <View style={styles.glassOverlay} />
+      {/* NO dark overlay — clean image */}
 
       {/* Heart */}
       <TouchableOpacity
@@ -75,31 +77,33 @@ export function GameCard({
       >
         <MaterialCommunityIcons
           name={liked ? "heart" : "heart-outline"}
-          size={featured ? 22 : 16}
-          color={liked ? "#ff4488" : "rgba(255,255,255,0.9)"}
+          size={featured ? 22 : 18}
+          color={liked ? "#ff4488" : "rgba(255,255,255,0.95)"}
         />
       </TouchableOpacity>
 
       {/* Badge */}
       {badge && (
-        <View style={[styles.badge, { backgroundColor: badge==="Hot!" ? "#ff6600" : "#00cc44" }]}>
+        <View style={[styles.badge, {
+          backgroundColor: badge==="Hot!" ? "#ff6600" : "#00cc44"
+        }]}>
           <Text style={styles.badgeText}>{badge}</Text>
         </View>
       )}
 
-      {/* Game name */}
-      <View style={[styles.nameWrap, featured && styles.nameWrapFeatured]}>
-        <Text style={[styles.gameName, featured && styles.gameNameFeatured]} numberOfLines={2}>
-          {name.toUpperCase()}
-        </Text>
-      </View>
-
-      {/* Bottom bar */}
-      <View style={styles.glassBottom}>
-        <View style={styles.playerRow}>
-          <View style={styles.dot} />
-          <Text style={styles.playerText}>{players}</Text>
+      {/* Featured name */}
+      {featured && (
+        <View style={styles.featuredName}>
+          <Text style={styles.featuredNameText} numberOfLines={1}>
+            {name.toUpperCase()}
+          </Text>
         </View>
+      )}
+
+      {/* Player count — small pill bottom right */}
+      <View style={styles.playerPill}>
+        <View style={styles.dot} />
+        <Text style={styles.playerText}>{players}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -107,43 +111,37 @@ export function GameCard({
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 14,
     overflow: "hidden",
-    borderWidth: 1,
-    backgroundColor: "#1e1050",
+    borderWidth: 1.5,
+    borderColor: "rgba(255,255,255,0.15)",
+    backgroundColor: "#0d0a2e",
   },
-  glassOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(255,255,255,0.04)",
+  heartBtn: {
+    position: "absolute", top: 6, left: 6, zIndex: 10,
   },
-  glassBottom: {
-    position:"absolute", bottom:0, left:0, right:0,
-    height: 26,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    borderTopWidth: 1,
-    borderTopColor: "rgba(255,255,255,0.08)",
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 8,
-    justifyContent: "flex-end",
-  },
-  heartBtn: { position:"absolute", top:6, left:6, zIndex:10 },
   badge: {
-    position:"absolute", top:5, right:5,
-    paddingHorizontal:5, paddingVertical:2, borderRadius:5,
+    position: "absolute", top: 5, right: 5,
+    paddingHorizontal: 5, paddingVertical: 2, borderRadius: 5,
+    zIndex: 10,
   },
   badgeText: { color:"#fff", fontSize:9, fontWeight:"700" },
-  nameWrap: { position:"absolute", bottom:28, left:7, right:7 },
-  nameWrapFeatured: { bottom:32, left:12, right:60 },
-  gameName: { color:"rgba(255,255,255,0.55)", fontSize:9, fontWeight:"600" },
-  gameNameFeatured: {
-    color:"#fff", fontSize:20, fontWeight:"900",
-    letterSpacing:1.5, lineHeight:24,
-    textShadowColor:"rgba(0,0,0,0.9)",
-    textShadowOffset:{width:1,height:2},
-    textShadowRadius:6,
+  featuredName: {
+    position: "absolute", bottom: 28, left: 10, right: 10,
   },
-  playerRow: { flexDirection:"row", alignItems:"center", gap:4 },
-  dot: { width:6, height:6, borderRadius:3, backgroundColor:"#00cc44" },
+  featuredNameText: {
+    color: "#fff", fontSize: 20, fontWeight: "900",
+    textShadowColor: "rgba(0,0,0,0.9)",
+    textShadowOffset: { width:1, height:2 },
+    textShadowRadius: 6,
+    letterSpacing: 1.2,
+  },
+  playerPill: {
+    position: "absolute", bottom: 5, right: 6,
+    flexDirection: "row", alignItems: "center", gap: 3,
+    backgroundColor: "rgba(0,0,0,0.55)",
+    paddingHorizontal: 6, paddingVertical: 2,
+    borderRadius: 8, zIndex: 10,
+  },
+  dot: { width:5, height:5, borderRadius:3, backgroundColor:"#00cc44" },
   playerText: { color:"#fff", fontSize:10, fontWeight:"700" },
 });
