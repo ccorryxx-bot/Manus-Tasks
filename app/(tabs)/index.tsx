@@ -61,7 +61,7 @@ export default function LobbyScreen() {
   const contentWidth  = W - SIDEBAR_L - SIDEBAR_R;
   const COLUMNS       = isLandscape ? 3 : 2;
   const cardW         = (contentWidth - H_PAD * 2 - COL_GAP * (COLUMNS - 1)) / COLUMNS;
-  const heroH         = isLandscape ? 160 : 190;
+  const heroH         = isLandscape ? 160 : 200;
 
   const [activeNav,    setActiveNav]    = useState("ငွေထုတ်");
   const [activeFilter, setActiveFilter] = useState<FilterId>("pp");
@@ -135,7 +135,7 @@ export default function LobbyScreen() {
           liked={favorites.has(g.id)}
           onLike={() => toggleFav(g.id)}
           cardWidth={cardW}
-          cardHeight={isLandscape ? 120 : 148}
+          cardHeight={cardW}
         />
       ))}
       {item.length < COLUMNS &&
