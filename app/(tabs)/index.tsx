@@ -135,7 +135,7 @@ export default function LobbyScreen() {
           liked={favorites.has(g.id)}
           onLike={() => toggleFav(g.id)}
           cardWidth={cardW}
-          cardHeight={cardW}
+          cardHeight={Math.round(cardW * 0.65)}
         />
       ))}
       {item.length < COLUMNS &&
