@@ -18,6 +18,7 @@ import { GameCard } from "@/components/GameCard";
 import { LeftSidebar } from "@/components/LeftSidebar";
 import { RightSidebar } from "@/components/RightSidebar";
 import { supabase, Game } from "@/lib/supabase";
+import { WithdrawModal } from "@/components/WithdrawModal";
 
 const H_PAD   = 6;
 const COL_GAP = 8;
@@ -46,6 +47,7 @@ function BokehLayer() {
       <View style={[b.c, { top:"35%",  right:"5%",  width:90,  height:90,  backgroundColor:"rgba(40,80,200,0.22)" }]} />
       <View style={[b.c, { top:"60%",  left:"30%",  width:140, height:140, backgroundColor:"rgba(90,20,180,0.2)" }]} />
       <View style={[b.c, { bottom:"10%",right:"20%",width:80,  height:80,  backgroundColor:"rgba(50,100,220,0.25)" }]} />
+      <WithdrawModal visible={showWithdraw} onClose={() => setShowWithdraw(false)} />
     </View>
   );
 }
@@ -70,6 +72,7 @@ export default function LobbyScreen() {
   const [page,         setPage]         = useState(0);
   const [loading,      setLoading]      = useState(false);
   const [hasMore,      setHasMore]      = useState(true);
+  const [showWithdraw, setShowWithdraw] = useState(false);
 
   const fetchGames = useCallback(async (pageNum: number, filter: FilterId) => {
     if (loading) return;
@@ -155,7 +158,7 @@ export default function LobbyScreen() {
       <BokehLayer />
 
       <View style={[styles.frame, { paddingTop: topPad, paddingBottom: bottomPad }]}>
-        {!isLandscape && <LeftSidebar activeId={activeNav} onSelect={setActiveNav}/>}
+        {!isLandscape && <LeftSidebar activeId={activeNav} onSelect={(id) => { setActiveNav(id); if(id==="ငွေထုတ်") setShowWithdraw(true); }}/>}
 
         <View style={styles.main}>
           <View style={styles.top}>
@@ -209,6 +212,7 @@ export default function LobbyScreen() {
 
         {!isLandscape && <RightSidebar onRefresh={() => { setHasMore(true); setGames([]); setPage(0); fetchGames(0, activeFilter); }}/>}
       </View>
+      <WithdrawModal visible={showWithdraw} onClose={() => setShowWithdraw(false)} />
     </View>
   );
 }
