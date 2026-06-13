@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useState } from "react";
+import React from "react";
 import {
   Image, StyleSheet, Text,
   TouchableOpacity, View,
@@ -27,41 +27,51 @@ export function GameCard({
   liked = false, onLike, onPress, cardWidth, cardHeight,
 }: GameCardProps) {
   const colors = useColors();
-  const height = cardHeight ?? (featured ? 190 : 130);
+  const W = cardWidth  ?? 160;
+  const H = cardHeight ?? (featured ? 200 : 104);
+
+  // Rotate image 90deg inside card to convert landscape→portrait fill
+  // When image rotates 90deg: swap W/H for correct fill
+  const imgSize = Math.max(W, H);
 
   return (
     <TouchableOpacity
-      style={[styles.card, { width: cardWidth, height, borderColor: "rgba(255,255,255,0.12)" }]}
+      style={[styles.card, { width: W, height: H, borderColor: "rgba(255,255,255,0.12)" }]}
       onPress={onPress}
       activeOpacity={0.88}
     >
-      {/* Background image or gradient */}
-      {imageUri ? (
-        <Image source={{ uri: imageUri }} style={StyleSheet.absoluteFill} resizeMode="cover"/>
-      ) : (
-        <LinearGradient
-          colors={bgColors as [string,string]}
-          style={StyleSheet.absoluteFill}
-          start={{ x:0, y:0 }} end={{ x:1, y:1 }}
-        />
-      )}
+      {/* Image clipping container */}
+      <View style={[StyleSheet.absoluteFill, { overflow: "hidden", borderRadius: 14 }]}>
+        {imageUri ? (
+          <Image
+            source={{ uri: imageUri }}
+            style={{
+              width: imgSize,
+              height: imgSize,
+              position: "absolute",
+              top: -(imgSize - H) / 2,
+              left: -(imgSize - W) / 2,
+              transform: [{ rotate: "90deg" }],
+            }}
+            resizeMode="cover"
+          />
+        ) : (
+          <LinearGradient
+            colors={bgColors as [string,string]}
+            style={StyleSheet.absoluteFill}
+            start={{ x:0,y:0 }} end={{ x:1,y:1 }}
+          />
+        )}
+      </View>
 
       {/* Glassmorphism overlay */}
       <View style={styles.glassOverlay} />
-
-      {/* Bottom glass bar */}
-      <View style={styles.glassBottom}>
-        <View style={styles.playerRow}>
-          <View style={styles.dot} />
-          <Text style={styles.playerText}>{players}</Text>
-        </View>
-      </View>
 
       {/* Heart */}
       <TouchableOpacity
         style={styles.heartBtn}
         onPress={onLike}
-        hitSlop={{ top:8, bottom:8, left:8, right:8 }}
+        hitSlop={{ top:8,bottom:8,left:8,right:8 }}
       >
         <MaterialCommunityIcons
           name={liked ? "heart" : "heart-outline"}
@@ -83,6 +93,14 @@ export function GameCard({
           {name.toUpperCase()}
         </Text>
       </View>
+
+      {/* Bottom bar */}
+      <View style={styles.glassBottom}>
+        <View style={styles.playerRow}>
+          <View style={styles.dot} />
+          <Text style={styles.playerText}>{players}</Text>
+        </View>
+      </View>
     </TouchableOpacity>
   );
 }
@@ -94,15 +112,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     backgroundColor: "#1e1050",
   },
-  // Glassmorphism: subtle white overlay + blur simulation
   glassOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(255,255,255,0.04)",
   },
   glassBottom: {
-    position: "absolute", bottom: 0, left: 0, right: 0,
-    height: 28,
-    backgroundColor: "rgba(0,0,0,0.45)",
+    position:"absolute", bottom:0, left:0, right:0,
+    height: 26,
+    backgroundColor: "rgba(0,0,0,0.5)",
     borderTopWidth: 1,
     borderTopColor: "rgba(255,255,255,0.08)",
     flexDirection: "row",
@@ -116,8 +133,8 @@ const styles = StyleSheet.create({
     paddingHorizontal:5, paddingVertical:2, borderRadius:5,
   },
   badgeText: { color:"#fff", fontSize:9, fontWeight:"700" },
-  nameWrap: { position:"absolute", bottom:30, left:7, right:7 },
-  nameWrapFeatured: { bottom:34, left:12, right:60 },
+  nameWrap: { position:"absolute", bottom:28, left:7, right:7 },
+  nameWrapFeatured: { bottom:32, left:12, right:60 },
   gameName: { color:"rgba(255,255,255,0.55)", fontSize:9, fontWeight:"600" },
   gameNameFeatured: {
     color:"#fff", fontSize:20, fontWeight:"900",
