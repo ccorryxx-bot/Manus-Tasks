@@ -47,7 +47,6 @@ function BokehLayer() {
       <View style={[b.c, { top:"35%",  right:"5%",  width:90,  height:90,  backgroundColor:"rgba(40,80,200,0.22)" }]} />
       <View style={[b.c, { top:"60%",  left:"30%",  width:140, height:140, backgroundColor:"rgba(90,20,180,0.2)" }]} />
       <View style={[b.c, { bottom:"10%",right:"20%",width:80,  height:80,  backgroundColor:"rgba(50,100,220,0.25)" }]} />
-      <WithdrawModal visible={showWithdraw} onClose={() => setShowWithdraw(false)} />
     </View>
   );
 }
