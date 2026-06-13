@@ -141,6 +141,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.55)",
     paddingHorizontal: 6, paddingVertical: 2,
     borderRadius: 8, zIndex: 10,
+    transform: [{ rotate: "90deg" }],
   },
   dot: { width:5, height:5, borderRadius:3, backgroundColor:"#00cc44" },
   playerText: { color:"#fff", fontSize:10, fontWeight:"700" },
