@@ -59,7 +59,7 @@ export default function LobbyScreen() {
   const SIDEBAR_L     = isLandscape ? 0 : 72;
   const SIDEBAR_R     = isLandscape ? 0 : 40;
   const contentWidth  = W - SIDEBAR_L - SIDEBAR_R;
-  const COLUMNS       = isLandscape ? 3 : 2;
+  const COLUMNS       = isLandscape ? 4 : 3;
   const cardW         = (contentWidth - H_PAD * 2 - COL_GAP * (COLUMNS - 1)) / COLUMNS;
   const heroH         = isLandscape ? 160 : 200;
 
@@ -135,7 +135,7 @@ export default function LobbyScreen() {
           liked={favorites.has(g.id)}
           onLike={() => toggleFav(g.id)}
           cardWidth={cardW}
-          cardHeight={Math.round(cardW * 0.65)}
+          cardHeight={cardW}
         />
       ))}
       {item.length < COLUMNS &&
