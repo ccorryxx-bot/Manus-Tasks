@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import * as ScreenOrientation from "expo-screen-orientation";
 import {
   Modal, View, Text, TouchableOpacity,
   TextInput, StyleSheet, Dimensions, Alert,
@@ -27,6 +28,17 @@ export function WithdrawModal({ visible, onClose, balance = 10000 }: Props) {
   const [amount,    setAmount]    = useState("");
   const [accountNo, setAccountNo] = useState("");
   const [attempts,  setAttempts]  = useState(0);
+
+  useEffect(() => {
+    if (visible) {
+      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE_RIGHT);
+    } else {
+      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+    }
+    return () => {
+      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+    };
+  }, [visible]);
 
   const handleQuick = (pct: number) => {
     setAmount(Math.floor(balance * pct).toString());
@@ -191,9 +203,7 @@ const styles = StyleSheet.create({
     flex: 1, backgroundColor: "rgba(0,0,0,0.85)",
     alignItems: "center", justifyContent: "center",
   },
-  rotated: {
-    transform: [{ rotate: "90deg" }],
-  },
+  rotated: {},
   fullFill: { flex: 1 },
   topBar: {
     flexDirection: "row", alignItems: "center",
