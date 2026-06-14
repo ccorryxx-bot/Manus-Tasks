@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import * as ScreenOrientation from "expo-screen-orientation";
 import {
   Modal, View, Text, TouchableOpacity,
-  TextInput, StyleSheet, Alert, useWindowDimensions,
+  TextInput, StyleSheet, Alert, useWindowDimensions, StatusBar,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -58,6 +58,7 @@ export function WithdrawModal({ visible, onClose, balance = 10000 }: Props) {
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={handleClose}>
       <View style={styles.backdrop}>
+        <StatusBar hidden />
         <LinearGradient colors={["#0a0a2e","#0d1b4b"]} style={styles.container}>
 
           {/* TOP BAR */}
@@ -185,8 +186,10 @@ export function WithdrawModal({ visible, onClose, balance = 10000 }: Props) {
 
 const styles = StyleSheet.create({
   backdrop: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.92)",
+    position: "absolute",
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: "#050515",
+    zIndex: 999,
   },
   container: {
     flex: 1,
